@@ -508,17 +508,62 @@ function parseXML(xml,src,region){
   }catch{return[];}
 }
 
-// ══ 번역 ══════════════════════════════════════════════════════
+// ══ 번역 — 3개 API 순차 폴백 ════════════════════════════════
 const tlCache={};
+let tlApiIdx=0; // 현재 사용 중인 API 인덱스
+
 async function translate(text){
-  if(tlCache[text]) return tlCache[text];
-  try{
-    const r=await fetch(TL+encodeURIComponent(text.slice(0,400)),{signal:AbortSignal.timeout(6000)});
+  if(!text||text.trim().length<3) return text;
+  const key=text.slice(0,100);
+  if(tlCache[key]) return tlCache[key];
+
+  const q=encodeURIComponent(text.slice(0,400));
+
+  // API 1: MyMemory
+  const tryMyMemory=async()=>{
+    const r=await fetch(`https://api.mymemory.translated.net/get?langpair=en|ko&q=${q}`,{signal:AbortSignal.timeout(5000)});
     const d=await r.json();
-    const t=d.responseData?.translatedText||text;
-    const result=t.includes("MYMEMORY WARNING")?text:t;
-    tlCache[text]=result; return result;
-  }catch{return text;}
+    const t=d.responseData?.translatedText||"";
+    if(!t||t.includes("MYMEMORY WARNING")||t===text) throw 0;
+    return t;
+  };
+
+  // API 2: LibreTranslate 공개 인스턴스
+  const tryLibre=async()=>{
+    const r=await fetch("https://libretranslate.com/translate",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({q:text.slice(0,400),source:"en",target:"ko",format:"text"}),
+      signal:AbortSignal.timeout(5000)
+    });
+    const d=await r.json();
+    if(!d.translatedText||d.error) throw 0;
+    return d.translatedText;
+  };
+
+  // API 3: Google 비공식 (무료, 요청 많으면 막힐 수 있음)
+  const tryGoogle=async()=>{
+    const url=`https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=ko&dt=t&q=${q}`;
+    const r=await fetch(url,{signal:AbortSignal.timeout(5000)});
+    const d=await r.json();
+    const t=d?.[0]?.[0]?.[0]||"";
+    if(!t||t===text) throw 0;
+    return t;
+  };
+
+  const apis=[tryMyMemory, tryGoogle, tryLibre];
+
+  for(let i=0;i<apis.length;i++){
+    const idx=(tlApiIdx+i)%apis.length;
+    try{
+      const result=await apis[idx]();
+      tlCache[key]=result;
+      return result;
+    }catch{ continue; }
+  }
+
+  // 전부 실패 시 원문 반환
+  return text;
 }
 
 // ══ 피드 수집 ═════════════════════════════════════════════════
@@ -616,15 +661,15 @@ async function poll(){
   document.getElementById("hstatus").innerHTML=`<b>LIVE</b> · ${okN}/${FEEDS.length}개 연결 · 1시간 이내 기준`;
   document.getElementById("lupdate").textContent="갱신: "+new Date().toLocaleTimeString("ko-KR");
 
-  // 번역 (5개씩 병렬)
+  // 번역 — 순차 처리 (API 한도 보호, 3개씩 묶어서)
   const toTl=liveNews.filter(n=>!n.titleKo).slice(0,50);
-  for(let i=0;i<toTl.length;i+=5){
-    await Promise.all(toTl.slice(i,i+5).map(async item=>{
+  for(let i=0;i<toTl.length;i+=3){
+    await Promise.all(toTl.slice(i,i+3).map(async item=>{
       item.titleKo=await translate(item.title);
       const el=document.getElementById(cid(item.url));
       if(el){el.textContent=item.titleKo;el.classList.remove("ing");}
     }));
-    await new Promise(r=>setTimeout(r,120));
+    await new Promise(r=>setTimeout(r,400)); // API 한도 보호
   }
   updateTicker();
 }
@@ -677,14 +722,14 @@ async function loadHistory(){
     </div>
   `).join("");
 
-  // 번역
-  for(let i=0;i<scored.length;i+=5){
-    await Promise.all(scored.slice(i,i+5).map(async item=>{
+  // 번역 — 3개씩 순차
+  for(let i=0;i<scored.length;i+=3){
+    await Promise.all(scored.slice(i,i+3).map(async item=>{
       const t=await translate(item.title);
       const el=document.getElementById("rp-"+cid(item.url));
       if(el){el.textContent=t;el.classList.remove("ing");}
     }));
-    await new Promise(r=>setTimeout(r,120));
+    await new Promise(r=>setTimeout(r,400));
   }
 }
 
