@@ -4,246 +4,290 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
   <title>전세계 속보 브리핑</title>
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+KR:wght@300;400;500;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+KR:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
   <style>
     :root{
-      --bg:#080808;--surface:#0f0f0f;--border:#1c1c1c;
-      --text:#ececec;--muted:#444;--accent:#ff1f1f;
-      --orange:#ff7a00;--yellow:#f5c518;--blue:#2979ff;--green:#00e676;
+      --bg:#070707;--s1:#0d0d0d;--s2:#111;--border:#1a1a1a;
+      --text:#eaeaea;--muted:#484848;--dim:#2a2a2a;
+      --red:#ff1f1f;--orange:#ff7c00;--yellow:#f5c400;
+      --green:#00e676;--blue:#3d8eff;--purple:#b06aff;
+      --col-gap:1px;
     }
     *{margin:0;padding:0;box-sizing:border-box;}
-    body{background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-serif;min-height:100vh;}
+    body{background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-serif;min-height:100vh;overflow-x:hidden;}
 
-    /* ── HEADER ── */
+    /* ══ HEADER ══════════════════════════════════════════ */
     header{
-      position:sticky;top:0;z-index:200;
-      background:rgba(8,8,8,0.98);backdrop-filter:blur(20px);
+      position:sticky;top:0;z-index:300;
+      background:rgba(7,7,7,0.98);backdrop-filter:blur(20px);
       border-bottom:1px solid var(--border);
-      padding:0 28px;height:58px;
-      display:flex;align-items:center;gap:14px;
+      height:56px;padding:0 20px;
+      display:flex;align-items:center;gap:12px;
     }
+    .logo-block{flex-shrink:0;}
+    .logo-en{font-family:'Bebas Neue',sans-serif;font-size:9px;letter-spacing:5px;color:var(--red);display:block;margin-bottom:1px;}
+    .logo-kr{font-family:'Noto Sans KR',sans-serif;font-weight:900;font-size:15px;letter-spacing:1.5px;color:var(--text);}
 
-    .logo-wrap{display:flex;flex-direction:column;line-height:1;flex-shrink:0;}
-    .logo-top{
-      font-family:'Bebas Neue',sans-serif;font-size:11px;
-      letter-spacing:6px;color:var(--accent);margin-bottom:2px;
-    }
-    .logo-main{
-      font-family:'Noto Sans KR',sans-serif;font-weight:700;font-size:16px;
-      letter-spacing:2px;color:var(--text);
-    }
+    .sep{width:1px;height:24px;background:var(--border);flex-shrink:0;}
 
-    .divider{width:1px;height:28px;background:var(--border);flex-shrink:0;}
+    .live-pill{display:flex;align-items:center;gap:6px;flex-shrink:0;background:rgba(0,230,118,0.08);border:1px solid rgba(0,230,118,0.2);padding:3px 10px;border-radius:20px;}
+    .ldot{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green);animation:pp 1.4s ease infinite;}
+    @keyframes pp{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.4;transform:scale(1.6);}}
+    .ltxt{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--green);font-weight:600;letter-spacing:1px;}
 
-    .live-wrap{display:flex;align-items:center;gap:7px;flex-shrink:0;}
-    .live-dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 7px var(--green);animation:pulse 1.4s ease-in-out infinite;}
-    @keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.4;transform:scale(1.5);}}
-    .live-text{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--green);font-weight:700;letter-spacing:1px;}
+    #hstatus{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+    #hstatus b{color:var(--green);}
 
-    #status{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    /* 카운트다운 */
+    .cd-block{display:flex;align-items:center;gap:8px;flex-shrink:0;}
+    #cdring{position:relative;width:30px;height:30px;}
+    #cdring svg{transform:rotate(-90deg);}
+    .rc-bg{fill:none;stroke:var(--dim);stroke-width:3;}
+    .rc-fill{fill:none;stroke:var(--red);stroke-width:3;stroke-linecap:round;transition:stroke-dashoffset 1s linear;}
+    #cdnum{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text);font-weight:600;}
+    #cdlbl{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);}
 
-    /* 카운트다운 링 */
-    .cd-wrap{display:flex;align-items:center;gap:8px;flex-shrink:0;}
-    #cd-ring{position:relative;width:32px;height:32px;flex-shrink:0;}
-    #cd-ring svg{transform:rotate(-90deg);}
-    #cd-ring circle.bg{fill:none;stroke:var(--border);stroke-width:2.5;}
-    #cd-ring circle.fill{fill:none;stroke:var(--accent);stroke-width:2.5;stroke-linecap:round;transition:stroke-dashoffset 1s linear;}
-    #cd-num{
-      position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
-      font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text);font-weight:700;
-    }
-    #cd-label{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);}
+    #nbadge{background:var(--green);color:#000;font-size:10px;font-weight:700;padding:4px 10px;border-radius:2px;display:none;cursor:pointer;flex-shrink:0;animation:fl .5s step-end infinite;}
+    @keyframes fl{50%{opacity:.5;}}
+    #hclock{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);flex-shrink:0;}
 
-    #newbadge{
-      background:var(--green);color:#000;font-size:10px;font-weight:700;
-      padding:4px 12px;border-radius:2px;display:none;cursor:pointer;flex-shrink:0;
-      animation:flash .6s step-end infinite;
-    }
-    @keyframes flash{50%{opacity:.5;}}
-    #clock{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);flex-shrink:0;}
+    /* ══ PROGRESS ══════════════════════════════════════ */
+    #prog{position:sticky;top:56px;z-index:299;height:2px;background:var(--border);}
+    #pfill{height:100%;background:var(--red);width:0;transition:width 0.3s;}
 
-    /* ── PROGRESS ── */
-    #prog{position:sticky;top:58px;z-index:199;height:2px;background:var(--border);}
-    #pfill{height:100%;background:var(--accent);width:0;transition:width 0.4s;}
+    /* ══ TICKER ════════════════════════════════════════ */
+    .ticker-bar{background:var(--red);height:28px;overflow:hidden;display:flex;align-items:center;}
+    .tb-label{background:#000;color:var(--red);font-family:'Bebas Neue',sans-serif;font-size:12px;letter-spacing:2px;padding:0 12px;height:100%;display:flex;align-items:center;flex-shrink:0;animation:bk 1.2s step-end infinite;}
+    @keyframes bk{50%{opacity:.2;}}
+    .tb-inner{overflow:hidden;flex:1;}
+    .tb-track{display:flex;white-space:nowrap;animation:sc 90s linear infinite;}
+    .tb-track span{font-size:10px;font-weight:700;color:white;padding-right:48px;}
+    @keyframes sc{from{transform:translateX(0);}to{transform:translateX(-50%);}}
 
-    /* ── TICKER ── */
-    .ticker{background:var(--accent);height:28px;overflow:hidden;display:flex;align-items:center;}
-    .tlabel{
-      background:#000;color:var(--accent);font-family:'Bebas Neue',sans-serif;
-      font-size:12px;letter-spacing:2px;padding:0 12px;height:100%;
-      display:flex;align-items:center;flex-shrink:0;animation:blink 1.2s step-end infinite;
-    }
-    @keyframes blink{50%{opacity:.25;}}
-    .tinner{overflow:hidden;flex:1;}
-    .ttrack{display:flex;white-space:nowrap;animation:scroll 80s linear infinite;}
-    .ttrack span{font-size:10px;font-weight:700;color:white;padding:0 40px 0 0;}
-    @keyframes scroll{from{transform:translateX(0);}to{transform:translateX(-50%);}}
+    /* ══ FILTER BAR ════════════════════════════════════ */
+    .filter-bar{padding:8px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+    .flbl{font-size:9px;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;margin-right:2px;}
+    .fb{background:transparent;border:1px solid var(--border);color:var(--muted);padding:3px 10px;font-size:10px;cursor:pointer;border-radius:2px;font-family:'Noto Sans KR',sans-serif;transition:all .15s;}
+    .fb:hover,.fb.on{background:var(--text);color:var(--bg);border-color:var(--text);}
+    .fb.fr.on{background:var(--red);border-color:var(--red);color:#fff;}
+    .fb.fo.on{background:var(--orange);border-color:var(--orange);color:#fff;}
+    .fb.fy.on{background:var(--yellow);border-color:var(--yellow);color:#000;}
 
-    /* ── FILTER BAR ── */
-    .bar{
-      padding:9px 28px;border-bottom:1px solid var(--border);
-      display:flex;align-items:center;gap:7px;flex-wrap:wrap;
-    }
-    .flabel{font-size:9px;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;}
-    .fbtn{
-      background:transparent;border:1px solid var(--border);color:var(--muted);
-      padding:4px 12px;font-size:10px;cursor:pointer;border-radius:2px;
-      font-family:'Noto Sans KR',sans-serif;transition:all .15s;
-    }
-    .fbtn:hover,.fbtn.on{background:var(--text);color:var(--bg);border-color:var(--text);}
-    .fbtn.fr.on{background:var(--accent);border-color:var(--accent);color:#fff;}
-    .fbtn.fo.on{background:var(--orange);border-color:var(--orange);color:#fff;}
-    .fbtn.fy.on{background:var(--yellow);border-color:var(--yellow);color:#000;}
+    /* ══ MAIN LAYOUT ══════════════════════════════════ */
+    .layout{display:grid;grid-template-columns:1fr 320px;gap:var(--col-gap);background:var(--border);min-height:calc(100vh - 120px);}
 
-    /* ── STATS ── */
-    .stats{
-      padding:7px 28px;border-bottom:1px solid var(--border);
-      display:flex;gap:16px;flex-wrap:wrap;align-items:center;
-      font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);
-    }
-    .stats b{color:var(--text);}
-    .stats .since{font-size:9px;color:var(--muted);margin-left:auto;}
+    /* ══ LEFT PANEL ═══════════════════════════════════ */
+    .left-panel{background:var(--bg);}
+    .panel-head{padding:10px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;}
+    .ph-title{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;}
+    .ph-stats{display:flex;gap:12px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);}
+    .ph-stats b{color:var(--text);}
 
-    /* ── FEED STATUS ── */
-    #feedrow{
-      padding:6px 28px;border-bottom:1px solid var(--border);
-      display:flex;flex-wrap:wrap;gap:3px;
-    }
-    .ftag{font-size:8px;padding:2px 5px;border-radius:2px;font-family:'JetBrains Mono',monospace;white-space:nowrap;}
-    .ftag.ok  {background:#0a2a0a;color:var(--green);}
-    .ftag.fail{background:#2a0a0a;color:#ff6b6b;}
+    /* 피드 상태 */
+    #feedrow{padding:5px 20px;border-bottom:1px solid var(--border);display:flex;flex-wrap:wrap;gap:3px;}
+    .ftag{font-size:7px;padding:1px 4px;border-radius:1px;font-family:'JetBrains Mono',monospace;white-space:nowrap;}
+    .ftag.ok{background:#0a1f0a;color:var(--green);}
+    .ftag.fail{background:#1f0a0a;color:#ff6b6b;}
     .ftag.wait{background:#1a1a1a;color:var(--muted);}
 
-    /* ── GRID ── */
-    .grid{
-      display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));
-      gap:1px;background:var(--border);padding:18px 28px;
-    }
+    .news-grid{display:flex;flex-direction:column;}
 
-    /* ── CARD ── */
+    /* ══ NEWS CARD ════════════════════════════════════ */
     .card{
-      background:var(--surface);padding:16px;
-      display:flex;flex-direction:column;gap:7px;
+      border-bottom:1px solid var(--border);padding:14px 20px;
       cursor:pointer;transition:background .15s;position:relative;
     }
-    .card:hover{background:#151515;}
-    .card.isnew{animation:slideIn .45s ease both;}
-    @keyframes slideIn{from{opacity:0;transform:translateY(-10px);}to{opacity:1;transform:translateY(0);}}
-    .card.isnew::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--green);}
+    .card:hover{background:var(--s1);}
+    .card.isnew{animation:ni .4s ease both;}
+    @keyframes ni{from{opacity:0;transform:translateX(-8px);}to{opacity:1;transform:translateX(0);}}
+    .card.isnew::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--green);}
 
-    .ctop{display:flex;align-items:center;gap:5px;flex-wrap:wrap;}
+    .ct{display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-bottom:7px;}
     .badge{font-size:8px;font-weight:700;letter-spacing:1px;padding:2px 6px;border-radius:2px;white-space:nowrap;}
-    .b최긴급{background:var(--accent);color:#fff;}
-    .b긴급   {background:var(--orange);color:#fff;}
-    .b주요   {background:var(--yellow);color:#000;}
-    .nbadge{background:var(--green);color:#000;font-size:8px;font-weight:700;padding:2px 5px;border-radius:2px;letter-spacing:1px;}
-    .src{font-size:8px;color:var(--muted);font-family:'JetBrains Mono',monospace;border:1px solid var(--border);padding:1px 5px;border-radius:2px;}
-    .ago{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--muted);margin-left:auto;}
-    .ago.fresh{color:var(--green);font-weight:700;}
+    .b최긴급{background:var(--red);color:#fff;}
+    .b긴급{background:var(--orange);color:#fff;}
+    .b주요{background:var(--yellow);color:#000;}
+    .nbdg{background:var(--green);color:#000;font-size:8px;font-weight:700;padding:2px 5px;border-radius:2px;letter-spacing:1px;}
+    .csrc{font-size:8px;color:var(--muted);font-family:'JetBrains Mono',monospace;border:1px solid var(--border);padding:1px 5px;border-radius:2px;}
+    .cago{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--muted);margin-left:auto;}
+    .cago.fresh{color:var(--green);font-weight:700;}
 
-    .tko{font-size:13px;font-weight:700;line-height:1.55;color:var(--text);}
+    .tko{font-size:13px;font-weight:700;line-height:1.55;color:var(--text);margin-bottom:4px;}
     .tko.ing{color:var(--muted);font-style:italic;font-weight:400;font-size:12px;}
     .ten{font-size:11px;color:var(--muted);line-height:1.4;}
 
-    .cfoot{display:flex;align-items:center;justify-content:space-between;margin-top:2px;}
+    /* AI 판단 근거 */
+    .ai-reason{
+      margin-top:6px;padding:5px 8px;background:rgba(61,142,255,0.05);
+      border-left:2px solid rgba(61,142,255,0.3);
+      font-size:10px;color:rgba(61,142,255,0.7);line-height:1.4;
+      font-family:'JetBrains Mono',monospace;
+    }
+
+    .cf{display:flex;align-items:center;justify-content:space-between;margin-top:6px;}
     .clink{font-size:10px;color:var(--blue);text-decoration:none;font-family:'JetBrains Mono',monospace;}
     .clink:hover{text-decoration:underline;}
-    .cscore{font-size:9px;color:var(--muted);font-family:'JetBrains Mono',monospace;}
+    .cscore-wrap{display:flex;gap:4px;align-items:center;}
+    .cscore{font-size:8px;color:var(--muted);font-family:'JetBrains Mono',monospace;}
 
-    .empty{
-      grid-column:1/-1;padding:60px;
-      display:flex;flex-direction:column;align-items:center;gap:14px;
-    }
-    .spinner{width:28px;height:28px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;}
+    /* 빈 화면 */
+    .empty-state{padding:60px 20px;display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center;}
+    .spinner{width:26px;height:26px;border:2px solid var(--border);border-top-color:var(--red);border-radius:50%;animation:spin .8s linear infinite;}
     @keyframes spin{to{transform:rotate(360deg);}}
-    .etitle{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:3px;color:var(--muted);}
-    .esub{font-size:12px;color:var(--muted);text-align:center;line-height:1.9;}
+    .et{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:3px;color:var(--muted);}
+    .es{font-size:11px;color:var(--muted);line-height:1.8;}
 
-    footer{
-      padding:16px 28px;border-top:1px solid var(--border);
-      font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);
-      display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;
+    /* ══ RIGHT PANEL — 30일 주요 뉴스 ════════════════ */
+    .right-panel{background:var(--bg);border-left:1px solid var(--border);}
+    .rp-head{
+      position:sticky;top:56px;z-index:100;
+      background:rgba(7,7,7,0.97);backdrop-filter:blur(10px);
+      padding:10px 16px;border-bottom:1px solid var(--border);
+    }
+    .rp-title{font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:2px;color:var(--text);margin-bottom:3px;}
+    .rp-sub{font-size:9px;color:var(--muted);font-family:'JetBrains Mono',monospace;}
+    .rp-sub b{color:var(--purple);}
+
+    .rp-list{display:flex;flex-direction:column;}
+
+    .rp-card{
+      border-bottom:1px solid var(--border);padding:12px 16px;
+      cursor:pointer;transition:background .15s;position:relative;
+    }
+    .rp-card:hover{background:var(--s1);}
+    .rp-card::before{
+      content:'';position:absolute;left:0;top:0;bottom:0;width:2px;
+      background:var(--purple);opacity:0.5;
     }
 
-    @media(max-width:560px){
-      header,.bar,.stats,.grid,footer,#feedrow{padding-left:12px;padding-right:12px;}
-      .grid{grid-template-columns:1fr;}
-      .logo-main{font-size:13px;}
+    .rp-top{display:flex;align-items:center;gap:5px;margin-bottom:6px;flex-wrap:wrap;}
+    .impact-badge{font-size:8px;font-weight:700;padding:2px 6px;border-radius:2px;background:var(--purple);color:#fff;white-space:nowrap;}
+    .rp-date{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--muted);margin-left:auto;}
+    .rp-src{font-size:8px;color:var(--muted);font-family:'JetBrains Mono',monospace;border:1px solid var(--border);padding:1px 4px;border-radius:2px;}
+
+    .rp-ko{font-size:12px;font-weight:700;line-height:1.5;color:var(--text);margin-bottom:3px;}
+    .rp-ko.ing{color:var(--muted);font-style:italic;font-weight:400;}
+    .rp-en{font-size:10px;color:var(--muted);line-height:1.4;}
+    .rp-why{margin-top:5px;font-size:9px;color:rgba(176,106,255,0.6);font-family:'JetBrains Mono',monospace;line-height:1.4;}
+    .rp-link{display:block;margin-top:5px;font-size:9px;color:var(--blue);text-decoration:none;font-family:'JetBrains Mono',monospace;}
+    .rp-link:hover{text-decoration:underline;}
+
+    .rp-loading{padding:30px;display:flex;flex-direction:column;align-items:center;gap:10px;}
+    .rp-loading .et{font-size:14px;}
+
+    /* ══ FOOTER ════════════════════════════════════════ */
+    footer{
+      grid-column:1/-1;padding:14px 20px;border-top:1px solid var(--border);
+      font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);
+      display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px;
+      background:var(--bg);
+    }
+
+    /* ══ RESPONSIVE ════════════════════════════════════ */
+    @media(max-width:768px){
+      .layout{grid-template-columns:1fr;}
+      .right-panel{border-left:none;border-top:1px solid var(--border);}
+      .rp-head{position:static;}
+      header{padding:0 12px;}
+      #cdlbl{display:none;}
+      .layout{background:var(--bg);gap:0;}
+    }
+    @media(max-width:480px){
+      .logo-kr{font-size:13px;}
+      .live-pill{display:none;}
     }
   </style>
 </head>
 <body>
 
+<!-- HEADER -->
 <header>
-  <div class="logo-wrap">
-    <div class="logo-top">LIVE GLOBAL</div>
-    <div class="logo-main">전세계 속보 브리핑</div>
+  <div class="logo-block">
+    <span class="logo-en">LIVE GLOBAL</span>
+    <span class="logo-kr">전세계 속보 브리핑</span>
   </div>
-  <div class="divider"></div>
-  <div class="live-wrap">
-    <div class="live-dot"></div>
-    <div class="live-text">LIVE</div>
-  </div>
-  <div id="status">초기화 중...</div>
-  <div class="cd-wrap">
-    <div id="cd-ring">
-      <svg width="32" height="32" viewBox="0 0 32 32">
-        <circle class="bg" cx="16" cy="16" r="13"/>
-        <circle class="fill" id="cd-arc" cx="16" cy="16" r="13"
-          stroke-dasharray="81.68" stroke-dashoffset="0"/>
+  <div class="sep"></div>
+  <div class="live-pill"><div class="ldot"></div><div class="ltxt">LIVE</div></div>
+  <div id="hstatus">초기화 중...</div>
+  <div class="cd-block">
+    <div id="cdring">
+      <svg width="30" height="30" viewBox="0 0 30 30">
+        <circle class="rc-bg" cx="15" cy="15" r="12"/>
+        <circle class="rc-fill" id="cdarc" cx="15" cy="15" r="12" stroke-dasharray="75.4" stroke-dashoffset="0"/>
       </svg>
-      <div id="cd-num">30</div>
+      <div id="cdnum">30</div>
     </div>
-    <div id="cd-label">초 후 갱신</div>
+    <div id="cdlbl">초 후 갱신</div>
   </div>
-  <div id="newbadge" onclick="scrollToTop()">▲ 새 속보</div>
-  <div id="clock">--:--:--</div>
+  <div id="nbadge" onclick="scrollToTop()">▲ 새 속보</div>
+  <div id="hclock">--:--:--</div>
 </header>
 <div id="prog"><div id="pfill"></div></div>
 
-<div class="ticker">
-  <div class="tlabel">BREAKING</div>
-  <div class="tinner"><div class="ttrack" id="ticker"><span>모니터링 시작 중...</span></div></div>
+<!-- TICKER -->
+<div class="ticker-bar">
+  <div class="tb-label">BREAKING</div>
+  <div class="tb-inner"><div class="tb-track" id="ticker"><span>속보 수집 중...</span></div></div>
 </div>
 
-<div class="bar">
-  <span class="flabel">등급</span>
-  <button class="fbtn on"  onclick="setF('all',this)">전체</button>
-  <button class="fbtn fr"  onclick="setF('최긴급',this)">🔴 최긴급</button>
-  <button class="fbtn fo"  onclick="setF('긴급',this)">🟠 긴급</button>
-  <button class="fbtn fy"  onclick="setF('주요',this)">🟡 주요</button>
+<!-- FILTER -->
+<div class="filter-bar">
+  <span class="flbl">등급</span>
+  <button class="fb on"  onclick="setF('all',this)">전체</button>
+  <button class="fb fr"  onclick="setF('최긴급',this)">🔴 최긴급</button>
+  <button class="fb fo"  onclick="setF('긴급',this)">🟠 긴급</button>
+  <button class="fb fy"  onclick="setF('주요',this)">🟡 주요</button>
 </div>
 
-<div class="stats" id="stats">수집 중...</div>
-<div id="feedrow"></div>
+<!-- LAYOUT -->
+<div class="layout">
 
-<div class="grid" id="grid">
-  <div class="empty">
-    <div class="spinner"></div>
-    <div class="etitle">모니터링 시작</div>
-    <div class="esub">
-      지금 이 순간부터 전세계 속보를 감시합니다.<br>
-      사이트가 열린 이후에 새로 올라온 뉴스만 표시됩니다.
+  <!-- LEFT: 실시간 속보 -->
+  <div class="left-panel">
+    <div class="panel-head">
+      <div class="ph-title">📡 실시간 속보 — 지난 1시간</div>
+      <div class="ph-stats" id="lstats">수집 중...</div>
+    </div>
+    <div id="feedrow"></div>
+    <div class="news-grid" id="newsgrid">
+      <div class="empty-state">
+        <div class="spinner"></div>
+        <div class="et">속보 수집 중</div>
+        <div class="es">37개 언론사 피드를 동시 수집 중입니다</div>
+      </div>
     </div>
   </div>
+
+  <!-- RIGHT: 30일 주요 뉴스 -->
+  <div class="right-panel">
+    <div class="rp-head">
+      <div class="rp-title">🧠 AI 선정 — 30일 주요 사건</div>
+      <div class="rp-sub">국제 정세 영향도 기준 · <b>AI 자동 판단</b></div>
+    </div>
+    <div class="rp-list" id="rplist">
+      <div class="rp-loading">
+        <div class="spinner"></div>
+        <div class="et">AI 분석 중</div>
+        <div class="es" style="font-size:10px">지난 30일 주요 사건 판별 중...</div>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <footer>
-  <span>전세계 속보 브리핑 — 사이트 오픈 시점 이후 신규 속보만 표시 · 최대 50건</span>
+  <span>전세계 속보 브리핑 — 누가 열어도 동일한 기준 표시 (pubDate 기준)</span>
   <span id="lupdate">—</span>
 </footer>
 
 <script>
-// ══ 상수 ═══════════════════════════════════════════════════════
-const POLL_SEC    = 30;   // 30초마다 갱신
-const MAX_ITEMS   = 50;   // 화면 최대 50개
+// ══ 상수 ══════════════════════════════════════════════════════
+const POLL_SEC  = 30;
+const MAX_LIVE  = 50;
+const ONE_HOUR  = 60 * 60 * 1000;
 
-// ★ 사이트 열린 시각 — 이 이후에 발행된 뉴스만 표시
-const OPEN_TIME   = Date.now();
-
-// ══ 피드 (메이저 37개) ══════════════════════════════════════════
+// ══ 실시간 피드 37개 ══════════════════════════════════════════
 const FEEDS = [
-  // 📡 Google News 검색 피드 — 가장 빠른 실시간
   {n:"G·속보",    r:"📡", u:"https://news.google.com/rss/search?q=breaking+news&hl=en&gl=US&ceid=US:en"},
   {n:"G·전쟁",    r:"📡", u:"https://news.google.com/rss/search?q=war+killed+attack+invasion&hl=en&gl=US&ceid=US:en"},
   {n:"G·재난",    r:"📡", u:"https://news.google.com/rss/search?q=earthquake+explosion+disaster+tsunami&hl=en&gl=US&ceid=US:en"},
@@ -253,81 +297,146 @@ const FEEDS = [
   {n:"G·아시아",  r:"📡", u:"https://news.google.com/rss/search?q=China+North+Korea+Taiwan+Asia&hl=en&gl=US&ceid=US:en"},
   {n:"G·세계",    r:"📡", u:"https://news.google.com/rss/topics/CAAqJggKIiBDQkFTRWdvSUwyMHZNRGx1YlY4U0FtVnVHZ0pWVXlnQVAB?hl=en&gl=US&ceid=US:en"},
   {n:"G·긴급",    r:"📡", u:"https://news.google.com/rss/search?q=emergency+urgent+crisis+ceasefire&hl=en&gl=US&ceid=US:en"},
-  {n:"G·경제",    r:"📡", u:"https://news.google.com/rss/search?q=sanctions+tariff+market+crash+collapse&hl=en&gl=US&ceid=US:en"},
-  // 🇺🇸 미국 주요 언론
-  {n:"Reuters",      r:"🇺🇸", u:"https://feeds.reuters.com/reuters/worldNews"},
-  {n:"AP",           r:"🇺🇸", u:"https://rsshub.app/apnews/topics/apf-topnews"},
-  {n:"CNN",          r:"🇺🇸", u:"http://rss.cnn.com/rss/edition_world.rss"},
-  {n:"NYT",          r:"🇺🇸", u:"https://rss.nytimes.com/services/xml/rss/nyt/World.xml"},
-  {n:"WashPost",     r:"🇺🇸", u:"https://feeds.washingtonpost.com/rss/world"},
-  {n:"ABC News",     r:"🇺🇸", u:"https://abcnews.go.com/abcnews/internationalheadlines"},
-  {n:"NBC News",     r:"🇺🇸", u:"https://feeds.nbcnews.com/nbcnews/public/world"},
-  {n:"CBS News",     r:"🇺🇸", u:"https://www.cbsnews.com/latest/rss/world"},
-  {n:"NPR",          r:"🇺🇸", u:"https://feeds.npr.org/1004/rss.xml"},
-  // 🇬🇧 영국
-  {n:"BBC",          r:"🇬🇧", u:"https://feeds.bbci.co.uk/news/world/rss.xml"},
-  {n:"Guardian",     r:"🇬🇧", u:"https://www.theguardian.com/world/rss"},
-  {n:"Sky News",     r:"🇬🇧", u:"https://feeds.skynews.com/feeds/rss/world.xml"},
-  {n:"Independent",  r:"🇬🇧", u:"https://www.independent.co.uk/news/world/rss"},
-  // 🌍 국제 언론
-  {n:"Al Jazeera",   r:"🌍",  u:"https://www.aljazeera.com/xml/rss/all.xml"},
-  {n:"DW",           r:"🇩🇪", u:"https://rss.dw.com/xml/rss-en-world"},
-  {n:"France 24",    r:"🇫🇷", u:"https://www.france24.com/en/rss"},
-  {n:"Euronews",     r:"🇪🇺", u:"https://www.euronews.com/rss?level=theme&name=news"},
-  {n:"RFI",          r:"🇫🇷", u:"https://www.rfi.fr/en/rss"},
-  {n:"SCMP",         r:"🇭🇰", u:"https://www.scmp.com/rss/91/feed"},
-  {n:"Japan Times",  r:"🇯🇵", u:"https://www.japantimes.co.jp/feed"},
-  {n:"NHK World",    r:"🇯🇵", u:"https://www3.nhk.or.jp/rss/news/cat0.xml"},
-  {n:"Times of India",r:"🇮🇳",u:"https://timesofindia.indiatimes.com/rssfeeds/296589292.cms"},
-  {n:"Arab News",    r:"🇸🇦", u:"https://www.arabnews.com/rss.xml"},
-  {n:"Haaretz",      r:"🇮🇱", u:"https://www.haaretz.com/cmlink/1.628765"},
-  {n:"Dawn",         r:"🇵🇰", u:"https://www.dawn.com/feeds/home"},
-  {n:"Kyiv Post",    r:"🇺🇦", u:"https://www.kyivpost.com/rss"},
-  {n:"TASS",         r:"🇷🇺", u:"https://tass.com/rss/v2.xml"},
+  {n:"G·경제",    r:"📡", u:"https://news.google.com/rss/search?q=sanctions+tariff+market+crash&hl=en&gl=US&ceid=US:en"},
+  {n:"Reuters",   r:"🇺🇸", u:"https://feeds.reuters.com/reuters/worldNews"},
+  {n:"AP",        r:"🇺🇸", u:"https://rsshub.app/apnews/topics/apf-topnews"},
+  {n:"CNN",       r:"🇺🇸", u:"http://rss.cnn.com/rss/edition_world.rss"},
+  {n:"NYT",       r:"🇺🇸", u:"https://rss.nytimes.com/services/xml/rss/nyt/World.xml"},
+  {n:"WashPost",  r:"🇺🇸", u:"https://feeds.washingtonpost.com/rss/world"},
+  {n:"ABC",       r:"🇺🇸", u:"https://abcnews.go.com/abcnews/internationalheadlines"},
+  {n:"NBC",       r:"🇺🇸", u:"https://feeds.nbcnews.com/nbcnews/public/world"},
+  {n:"CBS",       r:"🇺🇸", u:"https://www.cbsnews.com/latest/rss/world"},
+  {n:"NPR",       r:"🇺🇸", u:"https://feeds.npr.org/1004/rss.xml"},
+  {n:"BBC",       r:"🇬🇧", u:"https://feeds.bbci.co.uk/news/world/rss.xml"},
+  {n:"Guardian",  r:"🇬🇧", u:"https://www.theguardian.com/world/rss"},
+  {n:"Sky News",  r:"🇬🇧", u:"https://feeds.skynews.com/feeds/rss/world.xml"},
+  {n:"Independent",r:"🇬🇧",u:"https://www.independent.co.uk/news/world/rss"},
+  {n:"Al Jazeera",r:"🌍", u:"https://www.aljazeera.com/xml/rss/all.xml"},
+  {n:"DW",        r:"🇩🇪", u:"https://rss.dw.com/xml/rss-en-world"},
+  {n:"France 24", r:"🇫🇷", u:"https://www.france24.com/en/rss"},
+  {n:"Euronews",  r:"🇪🇺", u:"https://www.euronews.com/rss?level=theme&name=news"},
+  {n:"RFI",       r:"🇫🇷", u:"https://www.rfi.fr/en/rss"},
+  {n:"SCMP",      r:"🇭🇰", u:"https://www.scmp.com/rss/91/feed"},
+  {n:"Japan Times",r:"🇯🇵",u:"https://www.japantimes.co.jp/feed"},
+  {n:"NHK World", r:"🇯🇵", u:"https://www3.nhk.or.jp/rss/news/cat0.xml"},
+  {n:"TOI",       r:"🇮🇳", u:"https://timesofindia.indiatimes.com/rssfeeds/296589292.cms"},
+  {n:"Arab News", r:"🇸🇦", u:"https://www.arabnews.com/rss.xml"},
+  {n:"Haaretz",   r:"🇮🇱", u:"https://www.haaretz.com/cmlink/1.628765"},
+  {n:"Dawn",      r:"🇵🇰", u:"https://www.dawn.com/feeds/home"},
+  {n:"Kyiv Post", r:"🇺🇦", u:"https://www.kyivpost.com/rss"},
+  {n:"TASS",      r:"🇷🇺", u:"https://tass.com/rss/v2.xml"},
 ];
 
-// 여러 프록시 중 가장 먼저 응답하는 걸 사용
-async function fastFetch(url){
-  const proxies = [
-    `https://corsproxy.io/?${encodeURIComponent(url)}`,
-    `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,
-    `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
-  ];
-  return new Promise((resolve,reject)=>{
-    let done=false, fails=0;
-    proxies.forEach(async p=>{
-      try{
-        const r=await fetch(p,{signal:AbortSignal.timeout(7000)});
-        if(!r.ok) throw 0;
-        const text=await r.text();
-        // allorigins는 JSON {contents:...} 형태
-        let xml=text;
-        try{ const j=JSON.parse(text); if(j.contents) xml=j.contents; }catch{}
-        if(!done&&xml.includes("<item")){
-          done=true; resolve(xml);
-        } else if(!done) throw 0;
-      }catch{
-        fails++;
-        if(fails===proxies.length&&!done) reject(new Error("all fail"));
-      }
-    });
-  });
-}
-const TL     = "https://api.mymemory.translated.net/get?langpair=en|ko&q=";
+// 30일 주요 사건 피드
+const HISTORY_FEEDS = [
+  "https://news.google.com/rss/search?q=war+ceasefire+peace+treaty&hl=en&gl=US&ceid=US:en&after=30d",
+  "https://news.google.com/rss/search?q=nuclear+weapons+missile+launch&hl=en&gl=US&ceid=US:en",
+  "https://news.google.com/rss/search?q=coup+assassination+president+killed&hl=en&gl=US&ceid=US:en",
+  "https://news.google.com/rss/search?q=earthquake+tsunami+disaster+major&hl=en&gl=US&ceid=US:en",
+  "https://news.google.com/rss/search?q=sanctions+trade+war+economy+collapse&hl=en&gl=US&ceid=US:en",
+  "https://news.google.com/rss/search?q=Ukraine+Russia+frontline+offensive&hl=en&gl=US&ceid=US:en",
+  "https://news.google.com/rss/search?q=Gaza+Israel+Hamas+ceasefire&hl=en&gl=US&ceid=US:en",
+  "https://news.google.com/rss/search?q=China+Taiwan+military+tension&hl=en&gl=US&ceid=US:en",
+  "https://news.google.com/rss/search?q=North+Korea+missile+nuclear+test&hl=en&gl=US&ceid=US:en",
+  "https://news.google.com/rss/search?q=climate+disaster+flood+wildfire+major&hl=en&gl=US&ceid=US:en",
+];
 
-const SCORES = {
-  breaking:10,urgent:10,emergency:10,nuclear:12,war:10,invasion:10,
-  assassination:11,coup:10,bomb:9,attack:8,explosion:9,missile:9,
-  killed:8,dead:7,strike:8,shooting:8,hostage:8,earthquake:9,tsunami:9,
-  ceasefire:7,crisis:6,conflict:6,casualties:7,troops:5,collapse:6,
-  genocide:10,riot:6,sanctions:6,arrest:5,protest:5,election:5,
-  president:4,summit:5,flood:6,resign:5,drone:7,famine:6,
-  "north korea":7,gaza:7,ukraine:6,taiwan:6,iran:6,israel:6,russia:5,nato:5,
+const TL = "https://api.mymemory.translated.net/get?langpair=en|ko&q=";
+
+// ══ AI 중요도 채점 엔진 ════════════════════════════════════════
+// 단순 키워드가 아닌 다중 요소 분석
+const AI_FACTORS = {
+  // 인명 피해 규모
+  mass_casualty: ["massacre","hundreds killed","thousands dead","mass casualty","civilian deaths","genocide","famine","starvation"],
+  casualty_high: ["killed","dead","deaths","casualties","fatalities","victims"],
+  casualty_low:  ["injured","wounded","arrested","detained"],
+
+  // 군사/안보
+  wmd:           ["nuclear","chemical weapon","biological weapon","radiological","wmd","dirty bomb"],
+  military_major:["invasion","war","offensive","airstrike","missile strike","bombing","troops advance","front line"],
+  military_minor:["military","troops","soldiers","forces","attack","strike","drone"],
+
+  // 정치/외교
+  regime_change: ["coup","overthrow","president killed","leader assassinated","government collapse","civil war"],
+  diplomacy_major:["ceasefire","peace deal","treaty","summit","sanctions","nuclear deal"],
+  election:      ["election","vote","referendum","inauguration"],
+
+  // 경제
+  economic_crisis:["market crash","currency collapse","default","recession","financial crisis","bank collapse"],
+  economic_major: ["sanctions","tariff","trade war","oil price","economic"],
+
+  // 자연재해
+  disaster_major: ["earthquake","tsunami","hurricane","typhoon","catastrophic","magnitude 7","magnitude 8"],
+  disaster_minor: ["flood","wildfire","storm","tornado","volcano"],
+
+  // 지역별 가중치
+  hotspot: ["gaza","ukraine","taiwan","north korea","iran","russia","israel","china","nato","un security"],
 };
 
-function calcScore(t){const s=t.toLowerCase();let v=0;for(const[k,p]of Object.entries(SCORES))if(s.includes(k))v+=p;return v;}
-function grade(s){return s>=15?"최긴급":s>=8?"긴급":s>=4?"주요":"일반";}
+const FACTOR_WEIGHTS = {
+  mass_casualty:15, casualty_high:7, casualty_low:2,
+  wmd:20, military_major:10, military_minor:4,
+  regime_change:15, diplomacy_major:8, election:4,
+  economic_crisis:10, economic_major:5,
+  disaster_major:10, disaster_minor:4,
+  hotspot:5,
+};
+
+// AI 판단 근거 생성
+const REASON_MAP = {
+  wmd:            "🔴 대량파괴무기 관련 — 핵전쟁 위험 가능성",
+  mass_casualty:  "🔴 대규모 인명피해 — 광범위한 인도주의적 위기",
+  regime_change:  "🔴 정권 붕괴/교체 — 지역 안보 구도 변화",
+  military_major: "🟠 대규모 군사 작전 — 전선 변화 또는 확전 가능",
+  economic_crisis:"🟠 경제 위기 — 글로벌 금융 시장 파급 우려",
+  disaster_major: "🟠 대형 자연재해 — 대규모 사망·이재민 발생",
+  diplomacy_major:"🟡 주요 외교 결정 — 국제 질서 영향",
+  hotspot:        "🟡 핵심 분쟁 지역 관련 — 지속적 모니터링 필요",
+};
+
+function aiScore(title){
+  const t = title.toLowerCase();
+  let score = 0;
+  let reasons = [];
+  let topFactor = null;
+  let topScore = 0;
+
+  for(const [factor, keywords] of Object.entries(AI_FACTORS)){
+    if(keywords.some(k=>t.includes(k))){
+      const w = FACTOR_WEIGHTS[factor]||1;
+      score += w;
+      if(w > topScore){ topScore=w; topFactor=factor; }
+    }
+  }
+
+  // 근거 문장
+  let reasonText = "";
+  if(topFactor && REASON_MAP[topFactor]){
+    reasonText = REASON_MAP[topFactor];
+  } else if(score >= 8){
+    reasonText = "🟠 복합 위험 요소 감지 — 다수 지표 동시 발생";
+  } else if(score >= 4){
+    reasonText = "🟡 주목 필요 — 국제 정세 관련 키워드 감지";
+  }
+
+  return {score, reasonText};
+}
+
+function grade(score){
+  if(score>=18) return "최긴급";
+  if(score>=9)  return "긴급";
+  if(score>=4)  return "주요";
+  return "일반";
+}
 function gradeLabel(g){return{"최긴급":"🔴 최긴급","긴급":"🟠 긴급","주요":"🟡 주요"}[g]||"";}
+
+// 영향도 레이블 (오른쪽 패널용)
+function impactLabel(score){
+  if(score>=20) return "🌐 역사적 전환점";
+  if(score>=15) return "🔴 국제 정세 대변화";
+  if(score>=10) return "🟠 고강도 영향";
+  return "🟡 상당한 영향";
+}
 
 function minsAgo(d){
   if(!d) return 9999;
@@ -337,55 +446,69 @@ function minsAgo(d){
 function timeLabel(m){
   if(m<1)  return"방금 전";
   if(m<60) return`${m}분 전`;
-  return`${Math.floor(m/60)}시간 전`;
+  if(m<1440) return`${Math.floor(m/60)}시간 전`;
+  return`${Math.floor(m/1440)}일 전`;
+}
+function dateLabel(d){
+  if(!d) return "—";
+  return new Date(d).toLocaleDateString("ko-KR",{month:"short",day:"numeric"});
 }
 
-// ★ 핵심: 이 시각 이후 발행된 뉴스인지 확인
-function isAfterOpen(pubDate){
+// pubDate 기준으로 1시간 이내인지 확인 — 누가 열어도 동일
+function isWithin1Hour(pubDate){
   if(!pubDate) return false;
-  const t = new Date(pubDate);
+  const t=new Date(pubDate);
   if(isNaN(t)) return false;
-  return t.getTime() >= OPEN_TIME;
+  return (Date.now()-t.getTime()) <= ONE_HOUR;
+}
+function isWithin30Days(pubDate){
+  if(!pubDate) return true; // 날짜 없으면 일단 포함
+  const t=new Date(pubDate);
+  if(isNaN(t)) return true;
+  return (Date.now()-t.getTime()) <= 30*24*60*60*1000;
 }
 
-// ══ XML 파싱 ════════════════════════════════════════════════════
-function parseXML(xml, src, region){
+// ══ 프록시 경쟁 fetch ════════════════════════════════════════
+async function fastFetch(url){
+  const proxies=[
+    `https://corsproxy.io/?${encodeURIComponent(url)}`,
+    `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,
+    `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
+  ];
+  return new Promise((resolve,reject)=>{
+    let done=false,fails=0;
+    proxies.forEach(async p=>{
+      try{
+        const r=await fetch(p,{signal:AbortSignal.timeout(7000)});
+        if(!r.ok) throw 0;
+        const text=await r.text();
+        let xml=text;
+        try{const j=JSON.parse(text);if(j.contents)xml=j.contents;}catch{}
+        if(!done&&xml.includes("<item")){done=true;resolve(xml);}
+        else if(!done) throw 0;
+      }catch{
+        fails++;
+        if(fails===proxies.length&&!done) reject(new Error("all fail"));
+      }
+    });
+  });
+}
+
+// ══ XML 파싱 ══════════════════════════════════════════════════
+function parseXML(xml,src,region){
   try{
-    const doc = new DOMParser().parseFromString(xml,"text/xml");
+    const doc=new DOMParser().parseFromString(xml,"text/xml");
     return Array.from(doc.querySelectorAll("item")).slice(0,30).map(i=>{
-      const rawTitle = i.querySelector("title")?.textContent||"";
-      const title = rawTitle.replace(/<!\[CDATA\[|\]\]>/g,"").replace(/<[^>]+>/g,"").trim();
-      const link = (i.querySelector("link")?.textContent||i.querySelector("link")?.nextSibling?.textContent||"").trim();
-      const pubDate = i.querySelector("pubDate")?.textContent?.trim()||"";
-      return {source:src, region, title, url:link, pubDate};
+      const rawT=i.querySelector("title")?.textContent||"";
+      const title=rawT.replace(/<!\[CDATA\[|\]\]>/g,"").replace(/<[^>]+>/g,"").trim();
+      const link=(i.querySelector("link")?.textContent||i.querySelector("link")?.nextSibling?.textContent||"").trim();
+      const pubDate=i.querySelector("pubDate")?.textContent?.trim()||"";
+      return{source:src,region:region||"🌍",title,url:link,pubDate};
     }).filter(i=>i.title&&i.url);
   }catch{return[];}
 }
 
-// ══ 피드 수집 ════════════════════════════════════════════════════
-const feedSt = {};
-FEEDS.forEach(f=>feedSt[f.n]="wait");
-
-async function fetchFeed(feed){
-  try{
-    const xml = await fastFetch(feed.u);
-    const items = parseXML(xml, feed.n, feed.r);
-    if(!items.length) throw 0;
-    feedSt[feed.n]="ok"; updateFeedRow();
-    return items;
-  }catch{
-    feedSt[feed.n]="fail"; updateFeedRow();
-    return [];
-  }
-}
-
-function updateFeedRow(){
-  const el=document.getElementById("feedrow");
-  if(!el) return;
-  el.innerHTML=FEEDS.map(f=>`<span class="ftag ${feedSt[f.n]||'wait'}">${f.r}${f.n}</span>`).join("");
-}
-
-// ══ 번역 ════════════════════════════════════════════════════════
+// ══ 번역 ══════════════════════════════════════════════════════
 const tlCache={};
 async function translate(text){
   if(tlCache[text]) return tlCache[text];
@@ -398,188 +521,222 @@ async function translate(text){
   }catch{return text;}
 }
 
-// ══ 상태 ════════════════════════════════════════════════════════
-const seenUrls = new Set();
-let allNews    = [];       // 화면 표시 뉴스 (최대 50)
-let pendingNew = 0;
-let currentFilter = "all";
-let isFirstPoll   = true;
-let cdSec = POLL_SEC;
-let cdTimer = null;
+// ══ 피드 수집 ═════════════════════════════════════════════════
+const feedSt={};
+FEEDS.forEach(f=>feedSt[f.n]="wait");
 
-// ══ 카운트다운 링 ═══════════════════════════════════════════════
-const CIRC = 2*Math.PI*13; // 81.68
-function setCd(sec){
-  document.getElementById("cd-num").textContent = sec;
-  const offset = CIRC*(1 - sec/POLL_SEC);
-  document.getElementById("cd-arc").style.strokeDashoffset = offset;
+function updateFeedRow(){
+  const el=document.getElementById("feedrow");
+  if(!el) return;
+  el.innerHTML=FEEDS.map(f=>`<span class="ftag ${feedSt[f.n]||'wait'}">${f.r}${f.n}</span>`).join("");
+}
+
+async function fetchFeed(feed){
+  try{
+    const xml=await fastFetch(feed.u);
+    const items=parseXML(xml,feed.n,feed.r);
+    if(!items.length) throw 0;
+    feedSt[feed.n]="ok"; updateFeedRow();
+    return items;
+  }catch{
+    feedSt[feed.n]="fail"; updateFeedRow();
+    return [];
+  }
+}
+
+// ══ 상태 ══════════════════════════════════════════════════════
+const seenUrls=new Set();
+let liveNews=[];
+let pendingNew=0;
+let currentFilter="all";
+let cdSec=POLL_SEC;
+let cdTimer=null;
+
+// ══ 카운트다운 ════════════════════════════════════════════════
+const CIRC=2*Math.PI*12; // 75.4
+function setCd(s){
+  document.getElementById("cdnum").textContent=s;
+  document.getElementById("cdarc").style.strokeDashoffset=CIRC*(1-s/POLL_SEC);
 }
 function startCd(){
   clearInterval(cdTimer);
-  cdSec = POLL_SEC;
-  setCd(cdSec);
-  cdTimer = setInterval(()=>{
-    cdSec--;
-    if(cdSec<0) cdSec=0;
-    setCd(cdSec);
-  },1000);
+  cdSec=POLL_SEC; setCd(cdSec);
+  cdTimer=setInterval(()=>{ if(--cdSec<0) cdSec=0; setCd(cdSec); },1000);
 }
 
-// ══ 폴링 ════════════════════════════════════════════════════════
+// ══ 메인 폴링 — 실시간 속보 ══════════════════════════════════
 async function poll(){
   startCd();
   document.getElementById("pfill").style.width="0%";
-  document.getElementById("status").textContent="피드 수집 중...";
 
-  // ★ 37개 전부 동시 병렬 수집
-  let doneCount=0;
+  let done=0;
   const results=await Promise.all(FEEDS.map(async f=>{
     const items=await fetchFeed(f);
-    doneCount++;
-    document.getElementById("pfill").style.width=Math.round(doneCount/FEEDS.length*85)+"%";
+    done++;
+    document.getElementById("pfill").style.width=Math.round(done/FEEDS.length*85)+"%";
     return items;
   }));
-  let raw=results.flat();
 
   // 중복 제거
   const seen=new Set();
-  const unique=raw.filter(n=>{
+  const unique=results.flat().filter(n=>{
     if(!n.url||seen.has(n.url)) return false;
     seen.add(n.url); return true;
   });
 
-  // ★★★ 사이트 오픈 이후 발행된 것만
-  // 첫 폴링은 seenUrls 채우는 용도만 (기존 뉴스 인덱싱)
+  // ★ pubDate 기준 1시간 이내 + AI 채점
   let newItems=[];
   for(const item of unique){
-    if(seenUrls.has(item.url)){ continue; }
+    if(seenUrls.has(item.url)) continue;
     seenUrls.add(item.url);
 
-    if(isFirstPoll){
-      // 첫 폴링: 그냥 기록만 (화면에 표시 안 함)
-      continue;
-    }
+    if(!isWithin1Hour(item.pubDate)) continue;
 
-    // ★ 이후 폴링: 오픈 이후 발행된 것만 채택
-    if(!isAfterOpen(item.pubDate)) continue;
-
-    const sc=calcScore(item.title);
-    const gr=grade(sc);
+    const {score,reasonText}=aiScore(item.title);
+    const gr=grade(score);
     if(gr==="일반") continue;
 
-    item.score=sc; item.grade=gr; item.isNew=true;
-    newItems.push(item);
+    newItems.push({...item,score,grade:gr,reasonText,isNew:liveNews.length>0});
   }
 
-  if(isFirstPoll){
-    isFirstPoll=false;
-    const okCnt=Object.values(feedSt).filter(s=>s==="ok").length;
-    document.getElementById("status").innerHTML=
-      `<b style="color:var(--green)">LIVE</b> · ${okCnt}/${FEEDS.length}개 연결 · 30초마다 신규 속보 감시 중`;
-    document.getElementById("grid").innerHTML=`
-      <div class="empty">
-        <div style="font-size:36px">📡</div>
-        <div class="etitle">모니터링 중</div>
-        <div class="esub">
-          <b style="color:var(--green)">${Object.values(feedSt).filter(s=>s==="ok").length}개</b> 언론사 연결 완료<br>
-          지금부터 새로 올라오는 속보를 실시간으로 표시합니다.<br>
-          30초마다 자동 갱신됩니다.
-        </div>
-      </div>`;
-    document.getElementById("pfill").style.width="100%";
-    setTimeout(()=>document.getElementById("pfill").style.width="0%",800);
-    document.getElementById("lupdate").textContent="기준시각: "+new Date(OPEN_TIME).toLocaleTimeString("ko-KR");
-    updateFeedRow();
-    return;
-  }
-
-  // 새 뉴스 추가
   if(newItems.length>0){
-    // 최신순 정렬 후 맨 앞에 삽입
     newItems.sort((a,b)=>new Date(b.pubDate)-new Date(a.pubDate));
-    allNews = [...newItems, ...allNews].slice(0, MAX_ITEMS);
-    pendingNew += newItems.length;
-    const badge=document.getElementById("newbadge");
+    liveNews=[...newItems,...liveNews].slice(0,MAX_LIVE);
+    pendingNew+=newItems.length;
+    const badge=document.getElementById("nbadge");
     badge.style.display="block";
     badge.textContent=`▲ 새 속보 ${pendingNew}건`;
   }
 
-  renderGrid();
-  updateStats();
-
-  const okCnt=Object.values(feedSt).filter(s=>s==="ok").length;
-  document.getElementById("status").innerHTML=
-    `<b style="color:var(--green)">LIVE</b> · ${okCnt}/${FEEDS.length}개 연결 · 신규: ${allNews.filter(n=>n.isNew).length}건`;
+  renderLive();
+  updateLiveStats();
   document.getElementById("pfill").style.width="100%";
-  setTimeout(()=>document.getElementById("pfill").style.width="0%",800);
+  setTimeout(()=>document.getElementById("pfill").style.width="0%",600);
+  const okN=Object.values(feedSt).filter(s=>s==="ok").length;
+  document.getElementById("hstatus").innerHTML=`<b>LIVE</b> · ${okN}/${FEEDS.length}개 연결 · 1시간 이내 기준`;
   document.getElementById("lupdate").textContent="갱신: "+new Date().toLocaleTimeString("ko-KR");
-  updateFeedRow();
 
-  // 번역 — 5개씩 병렬 처리
-  const toTl=allNews.filter(n=>!n.titleKo).slice(0,50);
-  const TL_BATCH=5;
-  for(let i=0;i<toTl.length;i+=TL_BATCH){
-    const batch=toTl.slice(i,i+TL_BATCH);
-    await Promise.all(batch.map(async item=>{
+  // 번역 (5개씩 병렬)
+  const toTl=liveNews.filter(n=>!n.titleKo).slice(0,50);
+  for(let i=0;i<toTl.length;i+=5){
+    await Promise.all(toTl.slice(i,i+5).map(async item=>{
       item.titleKo=await translate(item.title);
       const el=document.getElementById(cid(item.url));
       if(el){el.textContent=item.titleKo;el.classList.remove("ing");}
     }));
-    await new Promise(r=>setTimeout(r,150));
+    await new Promise(r=>setTimeout(r,120));
   }
   updateTicker();
 }
 
-// ══ 렌더 ════════════════════════════════════════════════════════
-function cid(url){return"k"+btoa(encodeURIComponent(url).slice(-18)).replace(/[^a-z0-9]/gi,"");}
+// ══ 오른쪽 패널 — 30일 AI 선정 ═══════════════════════════════
+async function loadHistory(){
+  const rplist=document.getElementById("rplist");
+  let all=[];
+  for(const url of HISTORY_FEEDS){
+    try{
+      const xml=await fastFetch(url);
+      const items=parseXML(xml,"G-History","📡");
+      all=all.concat(items);
+    }catch{}
+    await new Promise(r=>setTimeout(r,100));
+  }
+
+  // 30일 이내 + AI 고점수만
+  const seen=new Set();
+  const scored=all
+    .filter(n=>{
+      if(!n.url||seen.has(n.url)) return false;
+      seen.add(n.url);
+      return isWithin30Days(n.pubDate);
+    })
+    .map(n=>{
+      const {score,reasonText}=aiScore(n.title);
+      return{...n,score,reasonText};
+    })
+    .filter(n=>n.score>=10) // 높은 임팩트만
+    .sort((a,b)=>new Date(b.pubDate)-new Date(a.pubDate))
+    .slice(0,30);
+
+  if(!scored.length){
+    rplist.innerHTML=`<div class="rp-loading"><div class="et">데이터 없음</div></div>`;
+    return;
+  }
+
+  rplist.innerHTML=scored.map(n=>`
+    <div class="rp-card" onclick="window.open('${n.url.replace(/'/g,"%27")}','_blank')">
+      <div class="rp-top">
+        <span class="impact-badge">${impactLabel(n.score)}</span>
+        <span class="rp-src">${n.source}</span>
+        <span class="rp-date">${dateLabel(n.pubDate)}</span>
+      </div>
+      <div class="rp-ko ing" id="rp-${cid(n.url)}">번역 중...</div>
+      <div class="rp-en">${n.title}</div>
+      ${n.reasonText?`<div class="rp-why">AI: ${n.reasonText}</div>`:""}
+      <a class="rp-link" href="${n.url.replace(/'/g,"%27")}" target="_blank" onclick="event.stopPropagation()">↗ 원문</a>
+    </div>
+  `).join("");
+
+  // 번역
+  for(let i=0;i<scored.length;i+=5){
+    await Promise.all(scored.slice(i,i+5).map(async item=>{
+      const t=await translate(item.title);
+      const el=document.getElementById("rp-"+cid(item.url));
+      if(el){el.textContent=t;el.classList.remove("ing");}
+    }));
+    await new Promise(r=>setTimeout(r,120));
+  }
+}
+
+// ══ 렌더 ══════════════════════════════════════════════════════
+function cid(url){return"k"+btoa(encodeURIComponent(url).slice(-16)).replace(/[^a-z0-9]/gi,"");}
 
 function renderCard(item){
   const min=minsAgo(item.pubDate);
   const safe=item.url.replace(/'/g,"%27");
-  return `<div class="card${item.isNew?" isnew":""}" onclick="window.open('${safe}','_blank')">
-    <div class="ctop">
+  return `<div class="card${item.isNew?" isnew":""}">
+    <div class="ct">
       <span class="badge b${item.grade}">${gradeLabel(item.grade)}</span>
-      ${item.isNew?`<span class="nbadge">NEW</span>`:""}
-      <span class="src">${item.region} ${item.source}</span>
-      <span class="ago ${min<=10?"fresh":""}">${timeLabel(min)}</span>
+      ${item.isNew?`<span class="nbdg">NEW</span>`:""}
+      <span class="csrc">${item.region} ${item.source}</span>
+      <span class="cago ${min<=15?"fresh":""}">${timeLabel(min)}</span>
     </div>
     <div class="tko${item.titleKo?"":" ing"}" id="${cid(item.url)}">${item.titleKo||"번역 중..."}</div>
     <div class="ten">${item.title}</div>
-    <div class="cfoot">
+    ${item.reasonText?`<div class="ai-reason">AI: ${item.reasonText}</div>`:""}
+    <div class="cf">
       <a class="clink" href="${safe}" target="_blank" onclick="event.stopPropagation()">↗ 원문</a>
-      <span class="cscore">score ${item.score}</span>
+      <div class="cscore-wrap"><span class="cscore">AI score ${item.score}</span></div>
     </div>
   </div>`;
 }
 
-function renderGrid(){
-  const list=currentFilter==="all"?allNews:allNews.filter(n=>n.grade===currentFilter);
-  const grid=document.getElementById("grid");
+function renderLive(){
+  const list=currentFilter==="all"?liveNews:liveNews.filter(n=>n.grade===currentFilter);
+  const grid=document.getElementById("newsgrid");
   if(!list.length){
-    grid.innerHTML=`<div class="empty">
-      <div style="font-size:36px;opacity:.3">📡</div>
-      <div class="etitle">신규 속보 대기 중</div>
-      <div class="esub">아직 새로 올라온 주요 뉴스가 없습니다.<br>30초마다 자동으로 확인하고 있습니다.</div>
+    grid.innerHTML=`<div class="empty-state">
+      <div style="font-size:32px;opacity:.3">📡</div>
+      <div class="et">1시간 이내 주요 속보 없음</div>
+      <div class="es">현재 1시간 이내 주요 뉴스가 없습니다.<br>30초마다 자동 확인 중</div>
     </div>`;
     return;
   }
   grid.innerHTML=list.map(n=>renderCard(n)).join("");
 }
 
-function updateStats(){
+function updateLiveStats(){
   const c={"최긴급":0,"긴급":0,"주요":0};
-  allNews.forEach(n=>{if(c[n.grade]!==undefined)c[n.grade]++;});
-  const since=new Date(OPEN_TIME).toLocaleTimeString("ko-KR",{hour:"2-digit",minute:"2-digit"});
-  document.getElementById("stats").innerHTML=
-    `<span>신규 <b>${allNews.length}</b>건</span>`+
-    `<span>🔴 <b>${c["최긴급"]}</b></span>`+
-    `<span>🟠 <b>${c["긴급"]}</b></span>`+
-    `<span>🟡 <b>${c["주요"]}</b></span>`+
-    `<span class="since">기준: ${since} 이후</span>`;
+  liveNews.forEach(n=>{if(c[n.grade]!==undefined)c[n.grade]++;});
+  document.getElementById("lstats").innerHTML=
+    `<span>총 <b>${liveNews.length}</b></span>`+
+    `<span>🔴<b>${c["최긴급"]}</b></span>`+
+    `<span>🟠<b>${c["긴급"]}</b></span>`+
+    `<span>🟡<b>${c["주요"]}</b></span>`;
 }
 
 function updateTicker(){
-  const top=allNews.filter(n=>n.titleKo).slice(0,15);
+  const top=liveNews.filter(n=>n.titleKo).slice(0,15);
   if(!top.length) return;
   const t=top.map(n=>`▶ [${n.source}] ${n.titleKo}`).join("　　　　");
   document.getElementById("ticker").innerHTML=`<span>${t+"　　　　　　"+t}</span>`;
@@ -587,29 +744,28 @@ function updateTicker(){
 
 function setF(f,btn){
   currentFilter=f;
-  document.querySelectorAll(".fbtn").forEach(b=>b.classList.remove("on"));
+  document.querySelectorAll(".fb").forEach(b=>b.classList.remove("on"));
   btn.classList.add("on");
-  renderGrid();
+  renderLive();
 }
 
 function scrollToTop(){
   window.scrollTo({top:0,behavior:"smooth"});
   pendingNew=0;
-  document.getElementById("newbadge").style.display="none";
+  document.getElementById("nbadge").style.display="none";
 }
 
-// 시계
+// ══ 시계 ══════════════════════════════════════════════════════
 setInterval(()=>{
-  document.getElementById("clock").textContent=
+  document.getElementById("hclock").textContent=
     new Date().toLocaleTimeString("ko-KR",{hour12:false});
 },1000);
 
-// 피드 상태 초기화
+// ══ 시작 ══════════════════════════════════════════════════════
 updateFeedRow();
-
-// 최초 폴 후 30초마다 반복
 (async function(){
-  await poll();
+  // 실시간 + 히스토리 동시 시작
+  await Promise.all([poll(), loadHistory()]);
   setInterval(poll, POLL_SEC*1000);
 })();
 </script>
