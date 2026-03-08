@@ -3,119 +3,211 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-  <title>WORLDNEWS — 실시간 속보</title>
+  <title>전세계 속보 브리핑</title>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+KR:wght@300;400;500;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet"/>
   <style>
     :root{
-      --bg:#0a0a0a;--surface:#111;--border:#1e1e1e;
-      --text:#e8e8e8;--muted:#444;--accent:#ff2d2d;
+      --bg:#080808;--surface:#0f0f0f;--border:#1c1c1c;
+      --text:#ececec;--muted:#444;--accent:#ff1f1f;
       --orange:#ff7a00;--yellow:#f5c518;--blue:#2979ff;--green:#00e676;
     }
     *{margin:0;padding:0;box-sizing:border-box;}
-    body{background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-serif;}
+    body{background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-serif;min-height:100vh;}
 
+    /* ── HEADER ── */
     header{
       position:sticky;top:0;z-index:200;
-      background:rgba(10,10,10,0.97);backdrop-filter:blur(16px);
+      background:rgba(8,8,8,0.98);backdrop-filter:blur(20px);
       border-bottom:1px solid var(--border);
-      padding:0 28px;height:60px;
-      display:flex;align-items:center;gap:12px;
+      padding:0 28px;height:58px;
+      display:flex;align-items:center;gap:14px;
     }
-    .logo{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:4px;flex-shrink:0;}
-    .logo span{color:var(--accent);}
-    .live-dot{width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0;box-shadow:0 0 8px var(--green);animation:pulse 1.4s ease-in-out infinite;}
-    @keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.4;transform:scale(1.4);}}
-    #status{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);flex:1;}
-    #status b{color:var(--green);}
-    #clock{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);margin-left:auto;}
+
+    .logo-wrap{display:flex;flex-direction:column;line-height:1;flex-shrink:0;}
+    .logo-top{
+      font-family:'Bebas Neue',sans-serif;font-size:11px;
+      letter-spacing:6px;color:var(--accent);margin-bottom:2px;
+    }
+    .logo-main{
+      font-family:'Noto Sans KR',sans-serif;font-weight:700;font-size:16px;
+      letter-spacing:2px;color:var(--text);
+    }
+
+    .divider{width:1px;height:28px;background:var(--border);flex-shrink:0;}
+
+    .live-wrap{display:flex;align-items:center;gap:7px;flex-shrink:0;}
+    .live-dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 7px var(--green);animation:pulse 1.4s ease-in-out infinite;}
+    @keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.4;transform:scale(1.5);}}
+    .live-text{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--green);font-weight:700;letter-spacing:1px;}
+
+    #status{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+
+    /* 카운트다운 링 */
+    .cd-wrap{display:flex;align-items:center;gap:8px;flex-shrink:0;}
+    #cd-ring{position:relative;width:32px;height:32px;flex-shrink:0;}
+    #cd-ring svg{transform:rotate(-90deg);}
+    #cd-ring circle.bg{fill:none;stroke:var(--border);stroke-width:2.5;}
+    #cd-ring circle.fill{fill:none;stroke:var(--accent);stroke-width:2.5;stroke-linecap:round;transition:stroke-dashoffset 1s linear;}
+    #cd-num{
+      position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+      font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text);font-weight:700;
+    }
+    #cd-label{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);}
+
     #newbadge{
-      background:var(--green);color:#000;font-size:11px;font-weight:700;
+      background:var(--green);color:#000;font-size:10px;font-weight:700;
       padding:4px 12px;border-radius:2px;display:none;cursor:pointer;flex-shrink:0;
+      animation:flash .6s step-end infinite;
     }
+    @keyframes flash{50%{opacity:.5;}}
+    #clock{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);flex-shrink:0;}
 
-    #prog{position:sticky;top:60px;z-index:199;height:2px;background:var(--border);}
-    #pfill{height:100%;background:var(--accent);width:0;transition:width 0.3s;}
+    /* ── PROGRESS ── */
+    #prog{position:sticky;top:58px;z-index:199;height:2px;background:var(--border);}
+    #pfill{height:100%;background:var(--accent);width:0;transition:width 0.4s;}
 
-    .ticker{background:var(--accent);height:30px;overflow:hidden;display:flex;align-items:center;}
-    .tlabel{background:#000;color:var(--accent);font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:2px;padding:0 14px;height:100%;display:flex;align-items:center;flex-shrink:0;animation:blink 1.2s step-end infinite;}
-    @keyframes blink{50%{opacity:.3;}}
+    /* ── TICKER ── */
+    .ticker{background:var(--accent);height:28px;overflow:hidden;display:flex;align-items:center;}
+    .tlabel{
+      background:#000;color:var(--accent);font-family:'Bebas Neue',sans-serif;
+      font-size:12px;letter-spacing:2px;padding:0 12px;height:100%;
+      display:flex;align-items:center;flex-shrink:0;animation:blink 1.2s step-end infinite;
+    }
+    @keyframes blink{50%{opacity:.25;}}
     .tinner{overflow:hidden;flex:1;}
-    .ttrack{display:flex;white-space:nowrap;animation:scroll 70s linear infinite;}
-    .ttrack span{font-size:11px;font-weight:700;color:white;padding:0 40px 0 0;}
+    .ttrack{display:flex;white-space:nowrap;animation:scroll 80s linear infinite;}
+    .ttrack span{font-size:10px;font-weight:700;color:white;padding:0 40px 0 0;}
     @keyframes scroll{from{transform:translateX(0);}to{transform:translateX(-50%);}}
 
-    .bar{padding:10px 28px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
-    .flabel{font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;}
-    .fbtn{background:transparent;border:1px solid var(--border);color:var(--muted);padding:4px 12px;font-size:11px;cursor:pointer;border-radius:2px;font-family:'Noto Sans KR',sans-serif;transition:all .15s;}
+    /* ── FILTER BAR ── */
+    .bar{
+      padding:9px 28px;border-bottom:1px solid var(--border);
+      display:flex;align-items:center;gap:7px;flex-wrap:wrap;
+    }
+    .flabel{font-size:9px;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;}
+    .fbtn{
+      background:transparent;border:1px solid var(--border);color:var(--muted);
+      padding:4px 12px;font-size:10px;cursor:pointer;border-radius:2px;
+      font-family:'Noto Sans KR',sans-serif;transition:all .15s;
+    }
     .fbtn:hover,.fbtn.on{background:var(--text);color:var(--bg);border-color:var(--text);}
     .fbtn.fr.on{background:var(--accent);border-color:var(--accent);color:#fff;}
     .fbtn.fo.on{background:var(--orange);border-color:var(--orange);color:#fff;}
     .fbtn.fy.on{background:var(--yellow);border-color:var(--yellow);color:#000;}
 
-    .stats{padding:8px 28px;border-bottom:1px solid var(--border);display:flex;gap:16px;flex-wrap:wrap;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);}
+    /* ── STATS ── */
+    .stats{
+      padding:7px 28px;border-bottom:1px solid var(--border);
+      display:flex;gap:16px;flex-wrap:wrap;align-items:center;
+      font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);
+    }
     .stats b{color:var(--text);}
+    .stats .since{font-size:9px;color:var(--muted);margin-left:auto;}
 
-    /* 피드 상태 */
-    #feed-grid{padding:8px 28px;border-bottom:1px solid var(--border);display:flex;flex-wrap:wrap;gap:4px;}
-    .ftag{font-size:9px;padding:2px 6px;border-radius:2px;font-family:'JetBrains Mono',monospace;}
-    .ftag.ok{background:#0a2a0a;color:var(--green);}
+    /* ── FEED STATUS ── */
+    #feedrow{
+      padding:6px 28px;border-bottom:1px solid var(--border);
+      display:flex;flex-wrap:wrap;gap:3px;
+    }
+    .ftag{font-size:8px;padding:2px 5px;border-radius:2px;font-family:'JetBrains Mono',monospace;white-space:nowrap;}
+    .ftag.ok  {background:#0a2a0a;color:var(--green);}
     .ftag.fail{background:#2a0a0a;color:#ff6b6b;}
     .ftag.wait{background:#1a1a1a;color:var(--muted);}
 
-    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:1px;background:var(--border);padding:20px 28px;}
+    /* ── GRID ── */
+    .grid{
+      display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));
+      gap:1px;background:var(--border);padding:18px 28px;
+    }
 
-    .card{background:var(--surface);padding:18px;display:flex;flex-direction:column;gap:8px;cursor:pointer;transition:background .15s;position:relative;}
-    .card:hover{background:#161616;}
-    .card.isnew{animation:slideIn .5s ease both;}
+    /* ── CARD ── */
+    .card{
+      background:var(--surface);padding:16px;
+      display:flex;flex-direction:column;gap:7px;
+      cursor:pointer;transition:background .15s;position:relative;
+    }
+    .card:hover{background:#151515;}
+    .card.isnew{animation:slideIn .45s ease both;}
     @keyframes slideIn{from{opacity:0;transform:translateY(-10px);}to{opacity:1;transform:translateY(0);}}
     .card.isnew::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--green);}
 
-    .ctop{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
-    .badge{font-size:9px;font-weight:700;letter-spacing:1px;padding:2px 7px;border-radius:2px;white-space:nowrap;}
+    .ctop{display:flex;align-items:center;gap:5px;flex-wrap:wrap;}
+    .badge{font-size:8px;font-weight:700;letter-spacing:1px;padding:2px 6px;border-radius:2px;white-space:nowrap;}
     .b최긴급{background:var(--accent);color:#fff;}
-    .b긴급{background:var(--orange);color:#fff;}
-    .b주요{background:var(--yellow);color:#000;}
-    .nbadge{background:var(--green);color:#000;font-size:9px;font-weight:700;padding:2px 6px;border-radius:2px;}
-    .src{font-size:9px;color:var(--muted);font-family:'JetBrains Mono',monospace;border:1px solid var(--border);padding:2px 6px;border-radius:2px;}
-    .ago{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);margin-left:auto;}
+    .b긴급   {background:var(--orange);color:#fff;}
+    .b주요   {background:var(--yellow);color:#000;}
+    .nbadge{background:var(--green);color:#000;font-size:8px;font-weight:700;padding:2px 5px;border-radius:2px;letter-spacing:1px;}
+    .src{font-size:8px;color:var(--muted);font-family:'JetBrains Mono',monospace;border:1px solid var(--border);padding:1px 5px;border-radius:2px;}
+    .ago{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--muted);margin-left:auto;}
     .ago.fresh{color:var(--green);font-weight:700;}
 
-    .tko{font-size:14px;font-weight:700;line-height:1.5;}
-    .tko.ing{color:var(--muted);font-style:italic;font-weight:400;}
+    .tko{font-size:13px;font-weight:700;line-height:1.55;color:var(--text);}
+    .tko.ing{color:var(--muted);font-style:italic;font-weight:400;font-size:12px;}
     .ten{font-size:11px;color:var(--muted);line-height:1.4;}
+
     .cfoot{display:flex;align-items:center;justify-content:space-between;margin-top:2px;}
     .clink{font-size:10px;color:var(--blue);text-decoration:none;font-family:'JetBrains Mono',monospace;}
     .clink:hover{text-decoration:underline;}
     .cscore{font-size:9px;color:var(--muted);font-family:'JetBrains Mono',monospace;}
 
-    .empty{grid-column:1/-1;padding:60px;display:flex;flex-direction:column;align-items:center;gap:14px;}
+    .empty{
+      grid-column:1/-1;padding:60px;
+      display:flex;flex-direction:column;align-items:center;gap:14px;
+    }
     .spinner{width:28px;height:28px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;}
     @keyframes spin{to{transform:rotate(360deg);}}
     .etitle{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:3px;color:var(--muted);}
-    .esub{font-size:12px;color:var(--muted);text-align:center;line-height:1.8;}
+    .esub{font-size:12px;color:var(--muted);text-align:center;line-height:1.9;}
 
-    footer{padding:20px 28px;border-top:1px solid var(--border);font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;}
-    @media(max-width:560px){header,.bar,.stats,.grid,footer,#feed-grid{padding-left:14px;padding-right:14px;}.grid{grid-template-columns:1fr;}}
+    footer{
+      padding:16px 28px;border-top:1px solid var(--border);
+      font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);
+      display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;
+    }
+
+    @media(max-width:560px){
+      header,.bar,.stats,.grid,footer,#feedrow{padding-left:12px;padding-right:12px;}
+      .grid{grid-template-columns:1fr;}
+      .logo-main{font-size:13px;}
+    }
   </style>
 </head>
 <body>
 
 <header>
-  <div class="logo">WORLD<span>NEWS</span></div>
-  <div class="live-dot"></div>
+  <div class="logo-wrap">
+    <div class="logo-top">LIVE GLOBAL</div>
+    <div class="logo-main">전세계 속보 브리핑</div>
+  </div>
+  <div class="divider"></div>
+  <div class="live-wrap">
+    <div class="live-dot"></div>
+    <div class="live-text">LIVE</div>
+  </div>
   <div id="status">초기화 중...</div>
+  <div class="cd-wrap">
+    <div id="cd-ring">
+      <svg width="32" height="32" viewBox="0 0 32 32">
+        <circle class="bg" cx="16" cy="16" r="13"/>
+        <circle class="fill" id="cd-arc" cx="16" cy="16" r="13"
+          stroke-dasharray="81.68" stroke-dashoffset="0"/>
+      </svg>
+      <div id="cd-num">30</div>
+    </div>
+    <div id="cd-label">초 후 갱신</div>
+  </div>
   <div id="newbadge" onclick="scrollToTop()">▲ 새 속보</div>
   <div id="clock">--:--:--</div>
 </header>
 <div id="prog"><div id="pfill"></div></div>
 
 <div class="ticker">
-  <div class="tlabel">LIVE</div>
-  <div class="tinner"><div class="ttrack" id="ticker"><span>수집 중...</span></div></div>
+  <div class="tlabel">BREAKING</div>
+  <div class="tinner"><div class="ttrack" id="ticker"><span>모니터링 시작 중...</span></div></div>
 </div>
 
 <div class="bar">
-  <span class="flabel">필터</span>
+  <span class="flabel">등급</span>
   <button class="fbtn on"  onclick="setF('all',this)">전체</button>
   <button class="fbtn fr"  onclick="setF('최긴급',this)">🔴 최긴급</button>
   <button class="fbtn fo"  onclick="setF('긴급',this)">🟠 긴급</button>
@@ -123,282 +215,360 @@
 </div>
 
 <div class="stats" id="stats">수집 중...</div>
-<div id="feed-grid"></div>
+<div id="feedrow"></div>
 
 <div class="grid" id="grid">
   <div class="empty">
     <div class="spinner"></div>
-    <div class="etitle">전세계 속보 수집 중</div>
-    <div class="esub">각국 언론사 피드를 순차 수집하고 있어요.<br>잠시 기다려주세요.</div>
+    <div class="etitle">모니터링 시작</div>
+    <div class="esub">
+      지금 이 순간부터 전세계 속보를 감시합니다.<br>
+      사이트가 열린 이후에 새로 올라온 뉴스만 표시됩니다.
+    </div>
   </div>
 </div>
 
 <footer>
-  <span>WORLDNEWS — 실시간 모니터링</span>
+  <span>전세계 속보 브리핑 — 사이트 오픈 시점 이후 신규 속보만 표시 · 최대 50건</span>
   <span id="lupdate">—</span>
 </footer>
 
 <script>
-// ══ 피드 목록 ═════════════════════════════════════════════════
-// allorigins 프록시 직접 XML 파싱 방식 — 한도 없음
+// ══ 상수 ═══════════════════════════════════════════════════════
+const POLL_SEC    = 30;   // 30초마다 갱신
+const MAX_ITEMS   = 50;   // 화면 최대 50개
+
+// ★ 사이트 열린 시각 — 이 이후에 발행된 뉴스만 표시
+const OPEN_TIME   = Date.now();
+
+// ══ 피드 (메이저 37개) ══════════════════════════════════════════
 const FEEDS = [
+  // 📡 Google News 검색 피드 — 가장 빠른 실시간
+  {n:"G·속보",    r:"📡", u:"https://news.google.com/rss/search?q=breaking+news&hl=en&gl=US&ceid=US:en"},
+  {n:"G·전쟁",    r:"📡", u:"https://news.google.com/rss/search?q=war+killed+attack+invasion&hl=en&gl=US&ceid=US:en"},
+  {n:"G·재난",    r:"📡", u:"https://news.google.com/rss/search?q=earthquake+explosion+disaster+tsunami&hl=en&gl=US&ceid=US:en"},
+  {n:"G·정치",    r:"📡", u:"https://news.google.com/rss/search?q=president+coup+assassination+arrest&hl=en&gl=US&ceid=US:en"},
+  {n:"G·중동",    r:"📡", u:"https://news.google.com/rss/search?q=Gaza+Israel+Hamas+Iran+Lebanon&hl=en&gl=US&ceid=US:en"},
+  {n:"G·우크라",  r:"📡", u:"https://news.google.com/rss/search?q=Ukraine+Russia+Zelensky+Putin&hl=en&gl=US&ceid=US:en"},
+  {n:"G·아시아",  r:"📡", u:"https://news.google.com/rss/search?q=China+North+Korea+Taiwan+Asia&hl=en&gl=US&ceid=US:en"},
+  {n:"G·세계",    r:"📡", u:"https://news.google.com/rss/topics/CAAqJggKIiBDQkFTRWdvSUwyMHZNRGx1YlY4U0FtVnVHZ0pWVXlnQVAB?hl=en&gl=US&ceid=US:en"},
+  {n:"G·긴급",    r:"📡", u:"https://news.google.com/rss/search?q=emergency+urgent+crisis+ceasefire&hl=en&gl=US&ceid=US:en"},
+  {n:"G·경제",    r:"📡", u:"https://news.google.com/rss/search?q=sanctions+tariff+market+crash+collapse&hl=en&gl=US&ceid=US:en"},
+  // 🇺🇸 미국 주요 언론
   {n:"Reuters",      r:"🇺🇸", u:"https://feeds.reuters.com/reuters/worldNews"},
-  {n:"BBC",          r:"🇬🇧", u:"https://feeds.bbci.co.uk/news/world/rss.xml"},
-  {n:"Al Jazeera",   r:"🌍",  u:"https://www.aljazeera.com/xml/rss/all.xml"},
-  {n:"Guardian",     r:"🇬🇧", u:"https://www.theguardian.com/world/rss"},
+  {n:"AP",           r:"🇺🇸", u:"https://rsshub.app/apnews/topics/apf-topnews"},
   {n:"CNN",          r:"🇺🇸", u:"http://rss.cnn.com/rss/edition_world.rss"},
+  {n:"NYT",          r:"🇺🇸", u:"https://rss.nytimes.com/services/xml/rss/nyt/World.xml"},
+  {n:"WashPost",     r:"🇺🇸", u:"https://feeds.washingtonpost.com/rss/world"},
+  {n:"ABC News",     r:"🇺🇸", u:"https://abcnews.go.com/abcnews/internationalheadlines"},
+  {n:"NBC News",     r:"🇺🇸", u:"https://feeds.nbcnews.com/nbcnews/public/world"},
+  {n:"CBS News",     r:"🇺🇸", u:"https://www.cbsnews.com/latest/rss/world"},
+  {n:"NPR",          r:"🇺🇸", u:"https://feeds.npr.org/1004/rss.xml"},
+  // 🇬🇧 영국
+  {n:"BBC",          r:"🇬🇧", u:"https://feeds.bbci.co.uk/news/world/rss.xml"},
+  {n:"Guardian",     r:"🇬🇧", u:"https://www.theguardian.com/world/rss"},
+  {n:"Sky News",     r:"🇬🇧", u:"https://feeds.skynews.com/feeds/rss/world.xml"},
+  {n:"Independent",  r:"🇬🇧", u:"https://www.independent.co.uk/news/world/rss"},
+  // 🌍 국제 언론
+  {n:"Al Jazeera",   r:"🌍",  u:"https://www.aljazeera.com/xml/rss/all.xml"},
   {n:"DW",           r:"🇩🇪", u:"https://rss.dw.com/xml/rss-en-world"},
   {n:"France 24",    r:"🇫🇷", u:"https://www.france24.com/en/rss"},
-  {n:"Sky News",     r:"🇬🇧", u:"https://feeds.skynews.com/feeds/rss/world.xml"},
-  {n:"NPR",          r:"🇺🇸", u:"https://feeds.npr.org/1004/rss.xml"},
-  {n:"ABC News",     r:"🇺🇸", u:"https://abcnews.go.com/abcnews/internationalheadlines"},
   {n:"Euronews",     r:"🇪🇺", u:"https://www.euronews.com/rss?level=theme&name=news"},
+  {n:"RFI",          r:"🇫🇷", u:"https://www.rfi.fr/en/rss"},
   {n:"SCMP",         r:"🇭🇰", u:"https://www.scmp.com/rss/91/feed"},
   {n:"Japan Times",  r:"🇯🇵", u:"https://www.japantimes.co.jp/feed"},
+  {n:"NHK World",    r:"🇯🇵", u:"https://www3.nhk.or.jp/rss/news/cat0.xml"},
   {n:"Times of India",r:"🇮🇳",u:"https://timesofindia.indiatimes.com/rssfeeds/296589292.cms"},
   {n:"Arab News",    r:"🇸🇦", u:"https://www.arabnews.com/rss.xml"},
-  // Google News — 검색어별 실시간
-  {n:"GNews·속보",   r:"📡", u:"https://news.google.com/rss/search?q=breaking+news&hl=en&gl=US&ceid=US:en"},
-  {n:"GNews·전쟁",   r:"📡", u:"https://news.google.com/rss/search?q=war+killed+attack&hl=en&gl=US&ceid=US:en"},
-  {n:"GNews·재난",   r:"📡", u:"https://news.google.com/rss/search?q=earthquake+explosion+disaster&hl=en&gl=US&ceid=US:en"},
-  {n:"GNews·중동",   r:"📡", u:"https://news.google.com/rss/search?q=Gaza+Israel+Iran&hl=en&gl=US&ceid=US:en"},
-  {n:"GNews·우크라", r:"📡", u:"https://news.google.com/rss/search?q=Ukraine+Russia&hl=en&gl=US&ceid=US:en"},
+  {n:"Haaretz",      r:"🇮🇱", u:"https://www.haaretz.com/cmlink/1.628765"},
+  {n:"Dawn",         r:"🇵🇰", u:"https://www.dawn.com/feeds/home"},
+  {n:"Kyiv Post",    r:"🇺🇦", u:"https://www.kyivpost.com/rss"},
+  {n:"TASS",         r:"🇷🇺", u:"https://tass.com/rss/v2.xml"},
 ];
 
-// allorigins: CORS 무제한, XML 직접 파싱
-const PROXY = u => `https://api.allorigins.win/get?url=${encodeURIComponent(u)}`;
-// 백업
-const PROXY2 = u => `https://corsproxy.io/?${encodeURIComponent(u)}`;
-
-const TL = "https://api.mymemory.translated.net/get?langpair=en|ko&q=";
+const PROXY  = u=>`https://api.allorigins.win/get?url=${encodeURIComponent(u)}`;
+const PROXY2 = u=>`https://corsproxy.io/?${encodeURIComponent(u)}`;
+const TL     = "https://api.mymemory.translated.net/get?langpair=en|ko&q=";
 
 const SCORES = {
-  breaking:10,urgent:10,emergency:10,nuclear:10,war:10,invasion:10,
-  assassination:10,coup:10,bomb:8,attack:8,explosion:8,missile:8,
-  killed:8,dead:7,strike:7,shooting:7,hostage:7,earthquake:8,tsunami:8,
-  ceasefire:6,crisis:5,conflict:5,casualties:6,troops:5,collapse:5,
-  genocide:9,riot:5,sanctions:5,arrest:4,protest:4,election:4,
-  president:4,summit:4,flood:5,resign:4,drone:6,famine:5,
-  "north korea":6,gaza:6,ukraine:5,taiwan:5,iran:5,israel:5,russia:4,nato:4,
+  breaking:10,urgent:10,emergency:10,nuclear:12,war:10,invasion:10,
+  assassination:11,coup:10,bomb:9,attack:8,explosion:9,missile:9,
+  killed:8,dead:7,strike:8,shooting:8,hostage:8,earthquake:9,tsunami:9,
+  ceasefire:7,crisis:6,conflict:6,casualties:7,troops:5,collapse:6,
+  genocide:10,riot:6,sanctions:6,arrest:5,protest:5,election:5,
+  president:4,summit:5,flood:6,resign:5,drone:7,famine:6,
+  "north korea":7,gaza:7,ukraine:6,taiwan:6,iran:6,israel:6,russia:5,nato:5,
 };
+
 function calcScore(t){const s=t.toLowerCase();let v=0;for(const[k,p]of Object.entries(SCORES))if(s.includes(k))v+=p;return v;}
 function grade(s){return s>=15?"최긴급":s>=8?"긴급":s>=4?"주요":"일반";}
 function gradeLabel(g){return{"최긴급":"🔴 최긴급","긴급":"🟠 긴급","주요":"🟡 주요"}[g]||"";}
-function minsAgo(d){if(!d)return 9999;const t=new Date(d);return isNaN(t)?9999:Math.floor((Date.now()-t)/60000);}
-function timeLabel(m){if(m<1)return"방금 전";if(m<60)return`${m}분 전`;return`${Math.floor(m/60)}시간 전`;}
 
-// ══ XML 파싱 ═════════════════════════════════════════════════
+function minsAgo(d){
+  if(!d) return 9999;
+  const t=new Date(d);
+  return isNaN(t)?9999:Math.floor((Date.now()-t)/60000);
+}
+function timeLabel(m){
+  if(m<1)  return"방금 전";
+  if(m<60) return`${m}분 전`;
+  return`${Math.floor(m/60)}시간 전`;
+}
+
+// ★ 핵심: 이 시각 이후 발행된 뉴스인지 확인
+function isAfterOpen(pubDate){
+  if(!pubDate) return false;
+  const t = new Date(pubDate);
+  if(isNaN(t)) return false;
+  return t.getTime() >= OPEN_TIME;
+}
+
+// ══ XML 파싱 ════════════════════════════════════════════════════
 function parseXML(xml, src, region){
   try{
-    const doc = new DOMParser().parseFromString(xml, "text/xml");
-    const items = Array.from(doc.querySelectorAll("item")).slice(0, 30);
-    return items.map(i=>{
-      const title = (
-        i.querySelector("title")?.textContent ||
-        i.querySelector("title")?.innerHTML || ""
-      ).replace(/<!\[CDATA\[|\]\]>/g,"").replace(/<[^>]+>/g,"").trim();
-      const link = (
-        i.querySelector("link")?.textContent ||
-        i.querySelector("link")?.nextSibling?.textContent || ""
-      ).trim();
-      const pubDate = i.querySelector("pubDate")?.textContent?.trim() || "";
+    const doc = new DOMParser().parseFromString(xml,"text/xml");
+    return Array.from(doc.querySelectorAll("item")).slice(0,30).map(i=>{
+      const rawTitle = i.querySelector("title")?.textContent||"";
+      const title = rawTitle.replace(/<!\[CDATA\[|\]\]>/g,"").replace(/<[^>]+>/g,"").trim();
+      const link = (i.querySelector("link")?.textContent||i.querySelector("link")?.nextSibling?.textContent||"").trim();
+      const pubDate = i.querySelector("pubDate")?.textContent?.trim()||"";
       return {source:src, region, title, url:link, pubDate};
-    }).filter(i=>i.title && i.url);
+    }).filter(i=>i.title&&i.url);
   }catch{return[];}
 }
 
-// ══ 피드 수집 ════════════════════════════════════════════════
-const feedStatus = {}; // ok | fail | wait
-FEEDS.forEach(f=>feedStatus[f.n]="wait");
+// ══ 피드 수집 ════════════════════════════════════════════════════
+const feedSt = {};
+FEEDS.forEach(f=>feedSt[f.n]="wait");
 
 async function fetchFeed(feed){
-  feedStatus[feed.n] = "wait";
-  updateFeedGrid();
   try{
-    // 1차: allorigins
-    const res = await fetch(PROXY(feed.u), {signal:AbortSignal.timeout(10000)});
+    const res = await fetch(PROXY(feed.u),{signal:AbortSignal.timeout(10000)});
     if(!res.ok) throw 0;
     const d = await res.json();
     if(!d.contents) throw 0;
     const items = parseXML(d.contents, feed.n, feed.r);
     if(!items.length) throw 0;
-    feedStatus[feed.n] = "ok";
-    updateFeedGrid();
+    feedSt[feed.n]="ok"; updateFeedRow();
     return items;
   }catch{
     try{
-      // 2차: corsproxy
-      const res2 = await fetch(PROXY2(feed.u), {signal:AbortSignal.timeout(8000)});
-      if(!res2.ok) throw 0;
-      const xml = await res2.text();
+      const r2 = await fetch(PROXY2(feed.u),{signal:AbortSignal.timeout(8000)});
+      if(!r2.ok) throw 0;
+      const xml = await r2.text();
       const items = parseXML(xml, feed.n, feed.r);
       if(!items.length) throw 0;
-      feedStatus[feed.n] = "ok";
-      updateFeedGrid();
+      feedSt[feed.n]="ok"; updateFeedRow();
       return items;
     }catch{
-      feedStatus[feed.n] = "fail";
-      updateFeedGrid();
+      feedSt[feed.n]="fail"; updateFeedRow();
       return [];
     }
   }
 }
 
-function updateFeedGrid(){
-  const el = document.getElementById("feed-grid");
+function updateFeedRow(){
+  const el=document.getElementById("feedrow");
   if(!el) return;
-  el.innerHTML = FEEDS.map(f=>
-    `<span class="ftag ${feedStatus[f.n]||'wait'}">${f.r}${f.n}</span>`
-  ).join("");
+  el.innerHTML=FEEDS.map(f=>`<span class="ftag ${feedSt[f.n]||'wait'}">${f.r}${f.n}</span>`).join("");
 }
 
-// ══ 번역 ════════════════════════════════════════════════════
-const tlCache = {};
+// ══ 번역 ════════════════════════════════════════════════════════
+const tlCache={};
 async function translate(text){
   if(tlCache[text]) return tlCache[text];
   try{
-    const r = await fetch(TL+encodeURIComponent(text.slice(0,400)),{signal:AbortSignal.timeout(6000)});
-    const d = await r.json();
-    const t = d.responseData?.translatedText||text;
-    const result = t.includes("MYMEMORY WARNING")?text:t;
-    tlCache[text]=result;
-    return result;
+    const r=await fetch(TL+encodeURIComponent(text.slice(0,400)),{signal:AbortSignal.timeout(6000)});
+    const d=await r.json();
+    const t=d.responseData?.translatedText||text;
+    const result=t.includes("MYMEMORY WARNING")?text:t;
+    tlCache[text]=result; return result;
   }catch{return text;}
 }
 
-// ══ 상태 ════════════════════════════════════════════════════
-const startTime = Date.now();
+// ══ 상태 ════════════════════════════════════════════════════════
 const seenUrls = new Set();
-let allNews = [];
+let allNews    = [];       // 화면 표시 뉴스 (최대 50)
 let pendingNew = 0;
 let currentFilter = "all";
-let isFirstLoad = true;
+let isFirstPoll   = true;
+let cdSec = POLL_SEC;
+let cdTimer = null;
 
-// ══ 폴링 ════════════════════════════════════════════════════
+// ══ 카운트다운 링 ═══════════════════════════════════════════════
+const CIRC = 2*Math.PI*13; // 81.68
+function setCd(sec){
+  document.getElementById("cd-num").textContent = sec;
+  const offset = CIRC*(1 - sec/POLL_SEC);
+  document.getElementById("cd-arc").style.strokeDashoffset = offset;
+}
+function startCd(){
+  clearInterval(cdTimer);
+  cdSec = POLL_SEC;
+  setCd(cdSec);
+  cdTimer = setInterval(()=>{
+    cdSec--;
+    if(cdSec<0) cdSec=0;
+    setCd(cdSec);
+  },1000);
+}
+
+// ══ 폴링 ════════════════════════════════════════════════════════
 async function poll(){
-  document.getElementById("status").textContent = "피드 수집 중...";
-  document.getElementById("pfill").style.width = "0%";
+  startCd();
+  document.getElementById("pfill").style.width="0%";
+  document.getElementById("status").textContent="피드 수집 중...";
 
-  // 5개씩 묶어서 순차 수집 (서버 부하 분산)
-  const BATCH = 5;
-  let allItems = [];
-  for(let i=0; i<FEEDS.length; i+=BATCH){
-    const batch = FEEDS.slice(i, i+BATCH);
-    const results = await Promise.all(batch.map(f=>fetchFeed(f)));
-    allItems = allItems.concat(results.flat());
-    const pct = Math.round((i+BATCH)/FEEDS.length*90);
-    document.getElementById("pfill").style.width = Math.min(pct,90)+"%";
+  // 5개씩 배치 수집
+  const BATCH=5;
+  let raw=[];
+  for(let i=0;i<FEEDS.length;i+=BATCH){
+    const batch=FEEDS.slice(i,i+BATCH);
+    const res=await Promise.all(batch.map(f=>fetchFeed(f)));
+    raw=raw.concat(res.flat());
+    const pct=Math.round((i+BATCH)/FEEDS.length*85);
+    document.getElementById("pfill").style.width=Math.min(pct,85)+"%";
   }
 
   // 중복 제거
-  const seen = new Set();
-  const unique = allItems.filter(n=>{
+  const seen=new Set();
+  const unique=raw.filter(n=>{
     if(!n.url||seen.has(n.url)) return false;
     seen.add(n.url); return true;
   });
 
-  // 채점
-  const scored = unique
-    .map(n=>({...n, score:calcScore(n.title), grade:grade(calcScore(n.title))}))
-    .filter(n=>n.grade!=="일반");
-
-  // 신규 감지
-  let newCount = 0;
-  for(const item of scored){
-    if(seenUrls.has(item.url)) continue;
+  // ★★★ 사이트 오픈 이후 발행된 것만
+  // 첫 폴링은 seenUrls 채우는 용도만 (기존 뉴스 인덱싱)
+  let newItems=[];
+  for(const item of unique){
+    if(seenUrls.has(item.url)){ continue; }
     seenUrls.add(item.url);
-    item.isNew = !isFirstLoad;
-    if(!isFirstLoad){
-      allNews.unshift(item);
-      newCount++;
-    } else {
-      allNews.push(item);
+
+    if(isFirstPoll){
+      // 첫 폴링: 그냥 기록만 (화면에 표시 안 함)
+      continue;
     }
+
+    // ★ 이후 폴링: 오픈 이후 발행된 것만 채택
+    if(!isAfterOpen(item.pubDate)) continue;
+
+    const sc=calcScore(item.title);
+    const gr=grade(sc);
+    if(gr==="일반") continue;
+
+    item.score=sc; item.grade=gr; item.isNew=true;
+    newItems.push(item);
   }
 
-  if(isFirstLoad){
-    allNews.sort((a,b)=>minsAgo(a.pubDate)-minsAgo(b.pubDate));
+  if(isFirstPoll){
+    isFirstPoll=false;
+    const okCnt=Object.values(feedSt).filter(s=>s==="ok").length;
+    document.getElementById("status").innerHTML=
+      `<b style="color:var(--green)">LIVE</b> · ${okCnt}/${FEEDS.length}개 연결 · 30초마다 신규 속보 감시 중`;
+    document.getElementById("grid").innerHTML=`
+      <div class="empty">
+        <div style="font-size:36px">📡</div>
+        <div class="etitle">모니터링 중</div>
+        <div class="esub">
+          <b style="color:var(--green)">${Object.values(feedSt).filter(s=>s==="ok").length}개</b> 언론사 연결 완료<br>
+          지금부터 새로 올라오는 속보를 실시간으로 표시합니다.<br>
+          30초마다 자동 갱신됩니다.
+        </div>
+      </div>`;
+    document.getElementById("pfill").style.width="100%";
+    setTimeout(()=>document.getElementById("pfill").style.width="0%",800);
+    document.getElementById("lupdate").textContent="기준시각: "+new Date(OPEN_TIME).toLocaleTimeString("ko-KR");
+    updateFeedRow();
+    return;
   }
 
-  if(newCount > 0){
-    pendingNew += newCount;
-    const badge = document.getElementById("newbadge");
-    badge.style.display = "block";
-    badge.textContent = `▲ 새 속보 ${pendingNew}건`;
+  // 새 뉴스 추가
+  if(newItems.length>0){
+    // 최신순 정렬 후 맨 앞에 삽입
+    newItems.sort((a,b)=>new Date(b.pubDate)-new Date(a.pubDate));
+    allNews = [...newItems, ...allNews].slice(0, MAX_ITEMS);
+    pendingNew += newItems.length;
+    const badge=document.getElementById("newbadge");
+    badge.style.display="block";
+    badge.textContent=`▲ 새 속보 ${pendingNew}건`;
   }
 
   renderGrid();
   updateStats();
-  document.getElementById("pfill").style.width = "100%";
-  setTimeout(()=>document.getElementById("pfill").style.width="0%", 800);
-  document.getElementById("lupdate").textContent = "마지막: "+new Date().toLocaleTimeString("ko-KR");
-  const okCount = Object.values(feedStatus).filter(s=>s==="ok").length;
-  document.getElementById("status").innerHTML =
-    `<b>LIVE</b> · ${okCount}/${FEEDS.length}개 피드 연결 · 2분마다 갱신`;
-  isFirstLoad = false;
+
+  const okCnt=Object.values(feedSt).filter(s=>s==="ok").length;
+  document.getElementById("status").innerHTML=
+    `<b style="color:var(--green)">LIVE</b> · ${okCnt}/${FEEDS.length}개 연결 · 신규: ${allNews.filter(n=>n.isNew).length}건`;
+  document.getElementById("pfill").style.width="100%";
+  setTimeout(()=>document.getElementById("pfill").style.width="0%",800);
+  document.getElementById("lupdate").textContent="갱신: "+new Date().toLocaleTimeString("ko-KR");
+  updateFeedRow();
 
   // 번역
-  const toTl = allNews.filter(n=>!n.titleKo).slice(0, 50);
+  const toTl=allNews.filter(n=>!n.titleKo).slice(0,50);
   for(const item of toTl){
     if(!item.titleKo){
-      item.titleKo = await translate(item.title);
-      const el = document.getElementById("k"+btoa(item.url.slice(-15)).replace(/[^a-z0-9]/gi,""));
+      item.titleKo=await translate(item.title);
+      const el=document.getElementById(cid(item.url));
       if(el){el.textContent=item.titleKo;el.classList.remove("ing");}
     }
-    await new Promise(r=>setTimeout(r,300));
+    await new Promise(r=>setTimeout(r,280));
   }
   updateTicker();
 }
 
-// ══ 렌더 ════════════════════════════════════════════════════
-function cardId(url){return "k"+btoa(url.slice(-15)).replace(/[^a-z0-9]/gi,"");}
+// ══ 렌더 ════════════════════════════════════════════════════════
+function cid(url){return"k"+btoa(encodeURIComponent(url).slice(-18)).replace(/[^a-z0-9]/gi,"");}
 
 function renderCard(item){
-  const min = minsAgo(item.pubDate);
-  const cid = cardId(item.url);
-  const safeUrl = item.url.replace(/'/g,"%27");
-  return `<div class="card${item.isNew?" isnew":""}" onclick="window.open('${safeUrl}','_blank')">
+  const min=minsAgo(item.pubDate);
+  const safe=item.url.replace(/'/g,"%27");
+  return `<div class="card${item.isNew?" isnew":""}" onclick="window.open('${safe}','_blank')">
     <div class="ctop">
       <span class="badge b${item.grade}">${gradeLabel(item.grade)}</span>
       ${item.isNew?`<span class="nbadge">NEW</span>`:""}
       <span class="src">${item.region} ${item.source}</span>
-      <span class="ago ${min<=30?"fresh":""}">${timeLabel(min)}</span>
+      <span class="ago ${min<=10?"fresh":""}">${timeLabel(min)}</span>
     </div>
-    <div class="tko${item.titleKo?"":" ing"}" id="${cid}">${item.titleKo||"번역 중..."}</div>
+    <div class="tko${item.titleKo?"":" ing"}" id="${cid(item.url)}">${item.titleKo||"번역 중..."}</div>
     <div class="ten">${item.title}</div>
     <div class="cfoot">
-      <a class="clink" href="${safeUrl}" target="_blank" onclick="event.stopPropagation()">↗ 원문</a>
+      <a class="clink" href="${safe}" target="_blank" onclick="event.stopPropagation()">↗ 원문</a>
       <span class="cscore">score ${item.score}</span>
     </div>
   </div>`;
 }
 
 function renderGrid(){
-  const list = currentFilter==="all"?allNews:allNews.filter(n=>n.grade===currentFilter);
-  const grid = document.getElementById("grid");
+  const list=currentFilter==="all"?allNews:allNews.filter(n=>n.grade===currentFilter);
+  const grid=document.getElementById("grid");
   if(!list.length){
-    grid.innerHTML=`<div class="empty"><div class="etitle">속보 없음</div><div class="esub">아직 주요 뉴스가 없습니다.</div></div>`;
+    grid.innerHTML=`<div class="empty">
+      <div style="font-size:36px;opacity:.3">📡</div>
+      <div class="etitle">신규 속보 대기 중</div>
+      <div class="esub">아직 새로 올라온 주요 뉴스가 없습니다.<br>30초마다 자동으로 확인하고 있습니다.</div>
+    </div>`;
     return;
   }
-  grid.innerHTML = list.map(n=>renderCard(n)).join("");
+  grid.innerHTML=list.map(n=>renderCard(n)).join("");
 }
 
 function updateStats(){
   const c={"최긴급":0,"긴급":0,"주요":0};
   allNews.forEach(n=>{if(c[n.grade]!==undefined)c[n.grade]++;});
-  const newN = allNews.filter(n=>n.isNew).length;
-  document.getElementById("stats").innerHTML =
-    `<span>총 <b>${allNews.length}</b>건</span>`+
-    (newN?`<span style="color:var(--green)">✦ 신규 <b>${newN}</b></span>`:"") +
-    `<span>🔴 <b>${c["최긴급"]}</b></span>` +
-    `<span>🟠 <b>${c["긴급"]}</b></span>` +
-    `<span>🟡 <b>${c["주요"]}</b></span>`;
+  const since=new Date(OPEN_TIME).toLocaleTimeString("ko-KR",{hour:"2-digit",minute:"2-digit"});
+  document.getElementById("stats").innerHTML=
+    `<span>신규 <b>${allNews.length}</b>건</span>`+
+    `<span>🔴 <b>${c["최긴급"]}</b></span>`+
+    `<span>🟠 <b>${c["긴급"]}</b></span>`+
+    `<span>🟡 <b>${c["주요"]}</b></span>`+
+    `<span class="since">기준: ${since} 이후</span>`;
 }
 
 function updateTicker(){
-  const top = allNews.filter(n=>n.titleKo).slice(0,15);
+  const top=allNews.filter(n=>n.titleKo).slice(0,15);
   if(!top.length) return;
-  const t = top.map(n=>`▶ [${n.source}] ${n.titleKo}`).join("　　　　");
+  const t=top.map(n=>`▶ [${n.source}] ${n.titleKo}`).join("　　　　");
   document.getElementById("ticker").innerHTML=`<span>${t+"　　　　　　"+t}</span>`;
 }
 
@@ -415,15 +585,19 @@ function scrollToTop(){
   document.getElementById("newbadge").style.display="none";
 }
 
+// 시계
 setInterval(()=>{
   document.getElementById("clock").textContent=
     new Date().toLocaleTimeString("ko-KR",{hour12:false});
 },1000);
 
-updateFeedGrid();
+// 피드 상태 초기화
+updateFeedRow();
+
+// 최초 폴 후 30초마다 반복
 (async function(){
   await poll();
-  setInterval(poll, 2*60*1000);
+  setInterval(poll, POLL_SEC*1000);
 })();
 </script>
 </body>
