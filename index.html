@@ -286,8 +286,33 @@ const FEEDS = [
   {n:"TASS",         r:"🇷🇺", u:"https://tass.com/rss/v2.xml"},
 ];
 
-const PROXY  = u=>`https://api.allorigins.win/get?url=${encodeURIComponent(u)}`;
-const PROXY2 = u=>`https://corsproxy.io/?${encodeURIComponent(u)}`;
+// 여러 프록시 중 가장 먼저 응답하는 걸 사용
+async function fastFetch(url){
+  const proxies = [
+    `https://corsproxy.io/?${encodeURIComponent(url)}`,
+    `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,
+    `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
+  ];
+  return new Promise((resolve,reject)=>{
+    let done=false, fails=0;
+    proxies.forEach(async p=>{
+      try{
+        const r=await fetch(p,{signal:AbortSignal.timeout(7000)});
+        if(!r.ok) throw 0;
+        const text=await r.text();
+        // allorigins는 JSON {contents:...} 형태
+        let xml=text;
+        try{ const j=JSON.parse(text); if(j.contents) xml=j.contents; }catch{}
+        if(!done&&xml.includes("<item")){
+          done=true; resolve(xml);
+        } else if(!done) throw 0;
+      }catch{
+        fails++;
+        if(fails===proxies.length&&!done) reject(new Error("all fail"));
+      }
+    });
+  });
+}
 const TL     = "https://api.mymemory.translated.net/get?langpair=en|ko&q=";
 
 const SCORES = {
@@ -343,27 +368,14 @@ FEEDS.forEach(f=>feedSt[f.n]="wait");
 
 async function fetchFeed(feed){
   try{
-    const res = await fetch(PROXY(feed.u),{signal:AbortSignal.timeout(10000)});
-    if(!res.ok) throw 0;
-    const d = await res.json();
-    if(!d.contents) throw 0;
-    const items = parseXML(d.contents, feed.n, feed.r);
+    const xml = await fastFetch(feed.u);
+    const items = parseXML(xml, feed.n, feed.r);
     if(!items.length) throw 0;
     feedSt[feed.n]="ok"; updateFeedRow();
     return items;
   }catch{
-    try{
-      const r2 = await fetch(PROXY2(feed.u),{signal:AbortSignal.timeout(8000)});
-      if(!r2.ok) throw 0;
-      const xml = await r2.text();
-      const items = parseXML(xml, feed.n, feed.r);
-      if(!items.length) throw 0;
-      feedSt[feed.n]="ok"; updateFeedRow();
-      return items;
-    }catch{
-      feedSt[feed.n]="fail"; updateFeedRow();
-      return [];
-    }
+    feedSt[feed.n]="fail"; updateFeedRow();
+    return [];
   }
 }
 
@@ -419,16 +431,15 @@ async function poll(){
   document.getElementById("pfill").style.width="0%";
   document.getElementById("status").textContent="피드 수집 중...";
 
-  // 5개씩 배치 수집
-  const BATCH=5;
-  let raw=[];
-  for(let i=0;i<FEEDS.length;i+=BATCH){
-    const batch=FEEDS.slice(i,i+BATCH);
-    const res=await Promise.all(batch.map(f=>fetchFeed(f)));
-    raw=raw.concat(res.flat());
-    const pct=Math.round((i+BATCH)/FEEDS.length*85);
-    document.getElementById("pfill").style.width=Math.min(pct,85)+"%";
-  }
+  // ★ 37개 전부 동시 병렬 수집
+  let doneCount=0;
+  const results=await Promise.all(FEEDS.map(async f=>{
+    const items=await fetchFeed(f);
+    doneCount++;
+    document.getElementById("pfill").style.width=Math.round(doneCount/FEEDS.length*85)+"%";
+    return items;
+  }));
+  let raw=results.flat();
 
   // 중복 제거
   const seen=new Set();
@@ -504,15 +515,17 @@ async function poll(){
   document.getElementById("lupdate").textContent="갱신: "+new Date().toLocaleTimeString("ko-KR");
   updateFeedRow();
 
-  // 번역
+  // 번역 — 5개씩 병렬 처리
   const toTl=allNews.filter(n=>!n.titleKo).slice(0,50);
-  for(const item of toTl){
-    if(!item.titleKo){
+  const TL_BATCH=5;
+  for(let i=0;i<toTl.length;i+=TL_BATCH){
+    const batch=toTl.slice(i,i+TL_BATCH);
+    await Promise.all(batch.map(async item=>{
       item.titleKo=await translate(item.title);
       const el=document.getElementById(cid(item.url));
       if(el){el.textContent=item.titleKo;el.classList.remove("ing");}
-    }
-    await new Promise(r=>setTimeout(r,280));
+    }));
+    await new Promise(r=>setTimeout(r,150));
   }
   updateTicker();
 }
